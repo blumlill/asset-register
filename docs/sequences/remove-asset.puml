@@ -1,0 +1,44 @@
+@startuml remove-asset
+!theme plain
+title DELETE /api/v1/contracts/{id}/assets/{assetId} — Remove Asset
+
+actor Client
+participant "ContractController" as Controller
+participant "ContractService" as Service
+participant "IContractRepository" as IRepo
+participant "ContractAggregate" as Aggregate
+database DB
+
+Client -> Controller : DELETE /api/v1/contracts/{id}/assets/{assetId}
+activate Controller
+Controller -> Service : removeAsset(contractId, assetId)
+activate Service
+
+Service -> IRepo : findByIdWithAssets(contractId)
+activate IRepo
+IRepo -> DB : SELECT contract with assets
+
+alt contract not found
+    IRepo --> Service : throw ContractNotFoundException
+    Service --> Controller : ContractNotFoundException
+    Controller --> Client : 404 CONTRACT_NOT_FOUND
+else found
+    IRepo --> Service : ContractAggregate
+    deactivate IRepo
+end
+
+Service -> Aggregate : removeAsset(assetId)
+note right: removes from in-memory collection
+
+Service -> IRepo : removeContractAsset(contractId, assetId)
+activate IRepo
+IRepo -> DB : DELETE FROM contract_assets\nWHERE contract_id = ? AND asset_id = ?
+DB --> IRepo : deleted
+IRepo --> Service : void
+deactivate IRepo
+
+Service --> Controller : void
+deactivate Service
+Controller --> Client : 204 No Content
+deactivate Controller
+@enduml

@@ -1,0 +1,104 @@
+@startuml domain-model
+!theme plain
+skinparam classAttributeIconSize 0
+
+title Asset Register — Domain Model
+
+class Asset {
+    -id: string
+    -name: string
+    -manufacturer: string
+    -model: string
+    -deletedAt: DateTimeImmutable?
+    +getId(): string
+    +getName(): string
+    +getManufacturer(): string
+    +getModel(): string
+    +getDeletedAt(): DateTimeImmutable?
+    +isDeleted(): bool
+    +update(name, manufacturer, model): void
+    +softDelete(at: DateTimeImmutable): void
+}
+
+class Contract {
+    -id: string
+    -contractNumber: string
+    -clientName: string
+    -startDate: DateTimeImmutable
+    -endDate: DateTimeImmutable?
+    +getId(): string
+    +getContractNumber(): string
+    +getClientName(): string
+    +getStartDate(): DateTimeImmutable
+    +getEndDate(): DateTimeImmutable?
+    +update(...): void
+}
+
+class ContractAsset {
+    -id: string
+    -contractId: string
+    -assetId: string
+    -serialNumber: string
+    +getId(): string
+    +getContractId(): string
+    +getAssetId(): string
+    +getSerialNumber(): string
+}
+
+class ContractAggregate {
+    -contract: Contract
+    -contractAssets: ContractAsset[]
+    -assetDetails: Asset[]
+    +getContract(): Contract
+    +getContractAssets(): ContractAsset[]
+    +getAssetDetail(assetId): Asset?
+    +assignAsset(ContractAsset): void
+    +removeAsset(assetId): void
+}
+
+interface IAssetRepository {
+    +findById(id): Asset
+    +findAll(): Asset[]
+    +save(Asset): Asset
+    +hasActiveAssignments(assetId): bool
+}
+
+interface IContractRepository {
+    +findById(id): Contract
+    +findByIdWithAssets(id): ContractAggregate
+    +findAll(): Contract[]
+    +saveContract(Contract): Contract
+    +deleteContract(id): void
+    +addContractAsset(ContractAsset): ContractAsset
+    +removeContractAsset(contractId, assetId): void
+    +isSerialNumberTaken(serialNumber): bool
+}
+
+class AssetService {
+    +create(CreateAssetData): AssetData
+    +update(id, UpdateAssetData): AssetData
+    +softDelete(id): void
+    +findById(id): AssetData
+    +findAll(): AssetData[]
+}
+
+class ContractService {
+    +create(CreateContractData): ContractData
+    +update(id, UpdateContractData): ContractData
+    +delete(id): void
+    +findById(id): ContractData
+    +findByIdWithAssets(id): ContractDetailData
+    +findAll(): ContractData[]
+    +assignAsset(contractId, AssignAssetData): ContractDetailData
+    +removeAsset(contractId, assetId): void
+}
+
+ContractAggregate *-- Contract
+ContractAggregate *-- ContractAsset
+ContractAggregate o-- Asset
+
+AssetService ..> IAssetRepository : uses
+ContractService ..> IContractRepository : uses
+ContractService ..> IAssetRepository : uses
+
+@enduml

@@ -1,0 +1,49 @@
+@startuml create-asset
+!theme plain
+title POST /api/v1/assets — Create Asset
+
+actor Client
+participant "AssetController" as Controller
+participant "CreateAssetRequest" as Request
+participant "AssetService" as Service
+participant "IAssetRepository" as IRepo
+participant "AssetMapper" as Mapper
+participant "AssetModel" as Model
+database DB
+
+Client -> Controller : POST /api/v1/assets\n{name, manufacturer, model}
+activate Controller
+
+Controller -> Request : validate()
+activate Request
+
+alt validation fails
+    Request --> Controller : ValidationException (422)
+    Controller --> Client : 422 VALIDATION_ERROR
+else validation passes
+    Request --> Controller : CreateAssetData DTO
+    deactivate Request
+
+    Controller -> Service : create(CreateAssetData)
+    activate Service
+
+    Service -> Service : new Asset(uuid, name, manufacturer, model)
+    Service -> IRepo : save(Asset)
+    activate IRepo
+
+    IRepo -> Model : find / new AssetModel
+    Model -> DB : INSERT INTO assets ...
+    DB --> Model : saved row
+    IRepo -> Mapper : fromModel(AssetModel)
+    Mapper --> IRepo : Asset entity
+    IRepo --> Service : Asset
+    deactivate IRepo
+
+    Service --> Controller : AssetData DTO
+    deactivate Service
+
+    Controller --> Client : 201 {data: {id, name, manufacturer, model}}
+end
+
+deactivate Controller
+@enduml

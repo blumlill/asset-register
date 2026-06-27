@@ -1,0 +1,42 @@
+@startuml get-contract-detail
+!theme plain
+title GET /api/v1/contracts/{id} — Contract Detail with Assets
+
+actor Client
+participant "ContractController" as Controller
+participant "ContractService" as Service
+participant "IContractRepository" as IRepo
+participant "ContractMapper" as CMapper
+participant "ContractAssetMapper" as CAMapper
+participant "AssetMapper" as AMapper
+database DB
+
+Client -> Controller : GET /api/v1/contracts/{id}
+activate Controller
+Controller -> Service : findByIdWithAssets(id)
+activate Service
+Service -> IRepo : findByIdWithAssets(id)
+activate IRepo
+IRepo -> DB : SELECT contracts, contract_assets, assets\nWHERE contracts.id = ?\n(eager load with relations)
+
+alt contract not found
+    DB --> IRepo : null
+    IRepo --> Service : throw ContractNotFoundException
+    Service --> Controller : ContractNotFoundException
+    Controller --> Client : 404 CONTRACT_NOT_FOUND
+else found
+    DB --> IRepo : ContractModel with contractAssets and assets
+    IRepo -> CMapper : fromModel(ContractModel)
+    IRepo -> CAMapper : fromModel(ContractAssetModel) for each
+    IRepo -> AMapper : fromModel(AssetModel) for each
+    IRepo --> Service : ContractAggregate
+    deactivate IRepo
+end
+
+Service -> Service : toDetailData(ContractAggregate)
+Service --> Controller : ContractDetailData DTO
+deactivate Service
+
+Controller --> Client : 200 {data: {id, contract_number, client_name,\n  start_date, end_date,\n  assets: [{id, asset_id, serial_number,\n    asset_name, manufacturer, model}]}}
+deactivate Controller
+@enduml

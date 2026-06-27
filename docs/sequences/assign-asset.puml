@@ -1,0 +1,75 @@
+@startuml assign-asset
+!theme plain
+title POST /api/v1/contracts/{id}/assets — Assign Asset
+
+actor Client
+participant "ContractController" as Controller
+participant "AssignAssetRequest" as Request
+participant "ContractService" as Service
+participant "IContractRepository" as IContRepo
+participant "IAssetRepository" as IAssetRepo
+participant "ContractAggregate" as Aggregate
+database DB
+
+Client -> Controller : POST /api/v1/contracts/{id}/assets\n{asset_id, serial_number}
+activate Controller
+Controller -> Request : validate()
+
+alt validation fails (asset_id not uuid or not in assets table)
+    Request --> Controller : ValidationException
+    Controller --> Client : 422 VALIDATION_ERROR
+else passes
+    Controller -> Service : assignAsset(contractId, AssignAssetData)
+    activate Service
+
+    Service -> IContRepo : findByIdWithAssets(contractId)
+    activate IContRepo
+    IContRepo -> DB : SELECT contract with assets
+    alt contract not found
+        IContRepo --> Service : throw ContractNotFoundException
+        Service --> Controller : ContractNotFoundException
+        Controller --> Client : 404 CONTRACT_NOT_FOUND
+    else found
+        IContRepo --> Service : ContractAggregate
+        deactivate IContRepo
+    end
+
+    Service -> IAssetRepo : findById(assetId)
+    alt asset not found or soft-deleted
+        IAssetRepo --> Service : throw AssetNotFoundException
+        Service --> Controller : AssetNotFoundException
+        Controller --> Client : 404 ASSET_NOT_FOUND
+    end
+
+    Service -> IContRepo : isSerialNumberTaken(serialNumber)
+    IContRepo -> DB : SELECT EXISTS(contract_assets WHERE serial_number = ?)
+    alt serial number taken
+        IContRepo --> Service : true
+        Service --> Controller : throw SerialNumberTakenException
+        Controller --> Client : 409 SERIAL_NUMBER_TAKEN
+    end
+
+    Service -> Aggregate : assignAsset(new ContractAsset)
+    activate Aggregate
+    alt asset already on this contract
+        Aggregate --> Service : throw AssetAlreadyAssignedException
+        Service --> Controller : AssetAlreadyAssignedException
+        Controller --> Client : 409 ASSET_ALREADY_ASSIGNED
+    else ok
+        Aggregate --> Service : (assigned in-memory)
+        deactivate Aggregate
+    end
+
+    Service -> IContRepo : addContractAsset(ContractAsset)
+    IContRepo -> DB : INSERT INTO contract_assets ...
+
+    Service -> IContRepo : findByIdWithAssets(contractId)
+    IContRepo --> Service : refreshed ContractAggregate
+
+    Service --> Controller : ContractDetailData DTO
+    deactivate Service
+    Controller --> Client : 201 {data: ContractDetail with updated assets}
+end
+
+deactivate Controller
+@enduml

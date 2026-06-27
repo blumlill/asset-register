@@ -1,0 +1,18 @@
+services:
+  app:
+    build:
+      target: runtime
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      XDEBUG_MODE: debug
+      XDEBUG_CLIENT_HOST: host.docker.internal
+    volumes:
+      - ./:/var/www
+      - /var/www/vendor
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  webserver:
+    ports:
+      - "8080:80"

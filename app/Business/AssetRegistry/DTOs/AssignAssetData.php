@@ -1,0 +1,11 @@
+<?php declare(strict_types=1);
+
+namespace App\Business\AssetRegistry\DTOs;
+
+readonly class AssignAssetData
+{
+    public function __construct(
+        public string $assetId,
+        public string $serialNumber,
+    ) {}
+}

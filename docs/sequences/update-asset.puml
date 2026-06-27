@@ -1,0 +1,52 @@
+@startuml update-asset
+!theme plain
+title PUT /api/v1/assets/{id} — Update Asset
+
+actor Client
+participant "AssetController" as Controller
+participant "UpdateAssetRequest" as Request
+participant "AssetService" as Service
+participant "IAssetRepository" as IRepo
+participant "AssetMapper" as Mapper
+participant "AssetModel" as Model
+database DB
+
+Client -> Controller : PUT /api/v1/assets/{id}\n{name, manufacturer, model}
+activate Controller
+
+Controller -> Request : validate()
+
+alt validation fails
+    Request --> Controller : ValidationException (422)
+    Controller --> Client : 422 VALIDATION_ERROR
+else validation passes
+    Controller -> Service : update(id, UpdateAssetData)
+    activate Service
+
+    Service -> IRepo : findById(id)
+    activate IRepo
+    IRepo -> DB : SELECT FROM assets WHERE id = ?
+    alt not found
+        DB --> IRepo : null
+        IRepo --> Service : throw AssetNotFoundException
+        Service --> Controller : AssetNotFoundException
+        Controller --> Client : 404 ASSET_NOT_FOUND
+    else found
+        DB --> IRepo : row
+        IRepo -> Mapper : fromModel()
+        IRepo --> Service : Asset entity
+        deactivate IRepo
+    end
+
+    Service -> Service : asset.update(name, manufacturer, model)
+    Service -> IRepo : save(Asset)
+    IRepo -> Model : UPDATE assets ...
+    IRepo --> Service : Asset
+    Service --> Controller : AssetData DTO
+    deactivate Service
+
+    Controller --> Client : 200 {data: {id, name, manufacturer, model}}
+end
+
+deactivate Controller
+@enduml

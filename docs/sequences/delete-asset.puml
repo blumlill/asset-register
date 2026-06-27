@@ -1,0 +1,47 @@
+@startuml delete-asset
+!theme plain
+title DELETE /api/v1/assets/{id} — Soft-Delete Asset
+
+actor Client
+participant "AssetController" as Controller
+participant "AssetService" as Service
+participant "IAssetRepository" as IRepo
+database DB
+
+Client -> Controller : DELETE /api/v1/assets/{id}
+activate Controller
+Controller -> Service : softDelete(id)
+activate Service
+
+Service -> IRepo : findById(id)
+activate IRepo
+IRepo -> DB : SELECT FROM assets WHERE id = ?
+alt not found
+    IRepo --> Service : throw AssetNotFoundException
+    Service --> Controller : AssetNotFoundException
+    Controller --> Client : 404 ASSET_NOT_FOUND
+else found
+    IRepo --> Service : Asset entity
+    deactivate IRepo
+end
+
+Service -> IRepo : hasActiveAssignments(id)
+IRepo -> DB : SELECT EXISTS(contract_assets WHERE asset_id = ?)
+
+alt has active assignments
+    IRepo --> Service : true
+    Service --> Controller : throw AssetHasActiveAssignmentsException
+    Controller --> Client : 409 ASSET_HAS_ACTIVE_ASSIGNMENTS
+else no active assignments
+    IRepo --> Service : false
+    Service -> Service : asset.softDelete(now)
+    Service -> IRepo : save(Asset)
+    IRepo -> DB : UPDATE assets SET deleted_at = NOW()
+    IRepo --> Service : saved Asset
+    Service --> Controller : void
+    deactivate Service
+    Controller --> Client : 204 No Content
+end
+
+deactivate Controller
+@enduml

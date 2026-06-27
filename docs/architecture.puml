@@ -1,0 +1,60 @@
+@startuml architecture
+!theme plain
+skinparam packageStyle rectangle
+skinparam ArrowColor DarkGray
+skinparam componentStyle uml2
+
+title Asset Register — Layer Architecture
+
+package "app/Http  (Driving Adapter)" as Http {
+    component AssetController
+    component ContractController
+    component FormRequests
+    component ApiResources
+    component LogApiRequestMiddleware
+    component SwaggerBasicAuthMiddleware
+}
+
+package "app/Business/AssetRegistry  (Domain)" as Business {
+    component AssetService
+    component ContractService
+    component ContractAggregate
+    component DomainEntities
+    component DomainExceptions
+    component DTOs
+    component IAssetRepository <<interface>>
+    component IContractRepository <<interface>>
+    component IUuidGenerator <<interface>>
+}
+
+package "app/Repository/Eloquent  (Driven Adapter)" as Repository {
+    component EloquentAssetRepository
+    component EloquentContractRepository
+    component AssetModel
+    component ContractModel
+    component ContractAssetModel
+    component Mappers
+}
+
+package "app/Core + app/Providers + app/Exceptions  (Infrastructure)" as Core {
+    component AppServiceProvider
+    component DomainExceptionRenderer
+    component RequestResponseLogger
+    component ApiLogModel
+}
+
+' Allowed dependency arrows
+Http --> Business : uses services & DTOs
+Http --> Core : uses logger via middleware
+Repository --> Business : implements contracts\nuses domain entities via mappers
+Core --> Business : renders domain exceptions
+AppServiceProvider --> Repository : binds implementations
+
+' Enforced prohibitions (no arrows drawn)
+note bottom of Business
+  ZERO Illuminate\\* imports
+  ZERO Repository\\* imports
+  ZERO Http\\* imports
+end note
+
+@enduml

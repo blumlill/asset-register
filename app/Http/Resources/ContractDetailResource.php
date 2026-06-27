@@ -1,0 +1,65 @@
+<?php declare(strict_types=1);
+
+namespace App\Http\Resources;
+
+use App\Business\AssetRegistry\DTOs\ContractAssetData;
+use App\Business\AssetRegistry\DTOs\ContractDetailData;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
+use OpenApi\Attributes as OA;
+
+#[OA\Schema(
+    schema: 'ContractDetailResource',
+    properties: [
+        new OA\Property(property: 'id', type: 'string', format: 'uuid'),
+        new OA\Property(property: 'contract_number', type: 'string'),
+        new OA\Property(property: 'client_name', type: 'string'),
+        new OA\Property(property: 'start_date', type: 'string', format: 'date'),
+        new OA\Property(property: 'end_date', type: 'string', format: 'date', nullable: true),
+        new OA\Property(
+            property: 'assets',
+            type: 'array',
+            items: new OA\Items(
+                properties: [
+                    new OA\Property(property: 'id', type: 'string', format: 'uuid'),
+                    new OA\Property(property: 'asset_id', type: 'string', format: 'uuid'),
+                    new OA\Property(property: 'serial_number', type: 'string'),
+                    new OA\Property(property: 'asset_name', type: 'string'),
+                    new OA\Property(property: 'manufacturer', type: 'string'),
+                    new OA\Property(property: 'model', type: 'string'),
+                ],
+            ),
+        ),
+    ],
+)]
+class ContractDetailResource extends JsonResource
+{
+    public function __construct(private readonly ContractDetailData $data)
+    {
+        parent::__construct($data);
+    }
+
+    public function toArray(Request $request): array
+    {
+        return [
+            'id' => $this->data->id,
+            'contract_number' => $this->data->contractNumber,
+            'client_name' => $this->data->clientName,
+            'start_date' => $this->data->startDate,
+            'end_date' => $this->data->endDate,
+            'assets' => array_map($this->mapAsset(...), $this->data->assets),
+        ];
+    }
+
+    private function mapAsset(ContractAssetData $ca): array
+    {
+        return [
+            'id' => $ca->id,
+            'asset_id' => $ca->assetId,
+            'serial_number' => $ca->serialNumber,
+            'asset_name' => $ca->assetName,
+            'manufacturer' => $ca->manufacturer,
+            'model' => $ca->model,
+        ];
+    }
+}
