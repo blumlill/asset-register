@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace App\Repository\Eloquent\Mappers;
 
@@ -10,9 +12,9 @@ final class ContractAssetMapper
     public static function fromModel(ContractAssetModel $model): ContractAsset
     {
         return new ContractAsset(
-            (string) $model->id,
-            (string) $model->contract_id,
-            (string) $model->asset_id,
+            $model->id,
+            $model->contract_id,
+            $model->asset_id,
             $model->serial_number,
         );
     }

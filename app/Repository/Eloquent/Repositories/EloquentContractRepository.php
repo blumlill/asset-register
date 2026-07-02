@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace App\Repository\Eloquent\Repositories;
 
@@ -6,12 +8,14 @@ use App\Business\AssetRegistry\Contracts\IContractRepository;
 use App\Business\AssetRegistry\Domain\Aggregates\ContractAggregate;
 use App\Business\AssetRegistry\Domain\Entities\Contract;
 use App\Business\AssetRegistry\Domain\Entities\ContractAsset;
+use App\Business\AssetRegistry\Domain\Exceptions\AssetNotAssignedException;
 use App\Business\AssetRegistry\Domain\Exceptions\ContractNotFoundException;
 use App\Repository\Eloquent\Mappers\AssetMapper;
 use App\Repository\Eloquent\Mappers\ContractAssetMapper;
 use App\Repository\Eloquent\Mappers\ContractMapper;
 use App\Repository\Eloquent\Models\ContractAssetModel;
 use App\Repository\Eloquent\Models\ContractModel;
+use Carbon\Carbon;
 
 final class EloquentContractRepository implements IContractRepository
 {
@@ -60,17 +64,19 @@ final class EloquentContractRepository implements IContractRepository
 
     public function saveContract(Contract $contract): Contract
     {
-        $model = ContractModel::find($contract->getId());
+        $model = ContractModel::find($contract->id);
 
         if ($model === null) {
-            $model = new ContractModel();
-            $model->id = $contract->getId();
+            $model = new ContractModel;
+            $model->id = $contract->id;
         }
 
         $model->contract_number = $contract->getContractNumber();
         $model->client_name = $contract->getClientName();
-        $model->start_date = $contract->getStartDate()->format('Y-m-d');
-        $model->end_date = $contract->getEndDate()?->format('Y-m-d');
+        $model->start_date = Carbon::createFromInterface($contract->getStartDate());
+        $model->end_date = $contract->getEndDate() !== null
+            ? Carbon::createFromInterface($contract->getEndDate())
+            : null;
 
         $model->save();
 
@@ -79,16 +85,18 @@ final class EloquentContractRepository implements IContractRepository
 
     public function deleteContract(string $id): void
     {
-        ContractModel::find($id)?->delete();
+        if (ContractModel::destroy($id) === 0) {
+            throw new ContractNotFoundException($id);
+        }
     }
 
     public function addContractAsset(ContractAsset $contractAsset): ContractAsset
     {
-        $model = new ContractAssetModel();
-        $model->id = $contractAsset->getId();
-        $model->contract_id = $contractAsset->getContractId();
-        $model->asset_id = $contractAsset->getAssetId();
-        $model->serial_number = $contractAsset->getSerialNumber();
+        $model = new ContractAssetModel;
+        $model->id = $contractAsset->id;
+        $model->contract_id = $contractAsset->contractId;
+        $model->asset_id = $contractAsset->assetId;
+        $model->serial_number = $contractAsset->serialNumber;
         $model->save();
 
         return ContractAssetMapper::fromModel($model->fresh() ?? $model);
@@ -96,9 +104,13 @@ final class EloquentContractRepository implements IContractRepository
 
     public function removeContractAsset(string $contractId, string $assetId): void
     {
-        ContractAssetModel::where('contract_id', $contractId)
+        $deleted = ContractAssetModel::where('contract_id', $contractId)
             ->where('asset_id', $assetId)
             ->delete();
+
+        if ($deleted === 0) {
+            throw new AssetNotAssignedException($assetId, $contractId);
+        }
     }
 
     public function isSerialNumberTaken(string $serialNumber): bool

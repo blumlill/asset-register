@@ -53,6 +53,7 @@ class ContractAggregate {
     +getContractAssets(): ContractAsset[]
     +getAssetDetail(assetId): Asset?
     +assignAsset(ContractAsset): void
+    +addAssetDetail(asset: Asset): void
     +removeAsset(assetId): void
 }
 

@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace App\Repository\Eloquent\Models;
 
@@ -6,7 +8,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class ContractAssetModel extends Model
+final class ContractAssetModel extends Model
 {
     use HasUuids;
 
@@ -19,11 +21,13 @@ class ContractAssetModel extends Model
         'serial_number',
     ];
 
+    /** @return BelongsTo<ContractModel, $this> */
     public function contract(): BelongsTo
     {
         return $this->belongsTo(ContractModel::class, 'contract_id');
     }
 
+    /** @return BelongsTo<AssetModel, $this> */
     public function asset(): BelongsTo
     {
         return $this->belongsTo(AssetModel::class, 'asset_id');

@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace App\Repository\Eloquent\Mappers;
 
@@ -11,7 +13,7 @@ final class ContractMapper
     public static function fromModel(ContractModel $model): Contract
     {
         return new Contract(
-            (string) $model->id,
+            $model->id,
             $model->contract_number,
             $model->client_name,
             new DateTimeImmutable($model->start_date->toDateString()),

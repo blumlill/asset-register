@@ -36,18 +36,21 @@ package "app/Repository/Eloquent  (Driven Adapter)" as Repository {
     component Mappers
 }
 
-package "app/Core + app/Providers + app/Exceptions  (Infrastructure)" as Core {
-    component AppServiceProvider
-    component DomainExceptionRenderer
+package "app/Core  (Infrastructure)" as Core {
     component RequestResponseLogger
-    component ApiLogModel
+    component ApiLog
+}
+
+package "app/Providers + bootstrap/app.php  (Wiring & Exception Rendering)" as Providers {
+    component AppServiceProvider
+    component ExceptionRendering
 }
 
 ' Allowed dependency arrows
 Http --> Business : uses services & DTOs
 Http --> Core : uses logger via middleware
 Repository --> Business : implements contracts\nuses domain entities via mappers
-Core --> Business : renders domain exceptions
+Providers --> Business : renders domain exceptions
 AppServiceProvider --> Repository : binds implementations
 
 ' Enforced prohibitions (no arrows drawn)

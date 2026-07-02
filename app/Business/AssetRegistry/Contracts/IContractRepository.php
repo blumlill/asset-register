@@ -1,10 +1,13 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace App\Business\AssetRegistry\Contracts;
 
 use App\Business\AssetRegistry\Domain\Aggregates\ContractAggregate;
 use App\Business\AssetRegistry\Domain\Entities\Contract;
 use App\Business\AssetRegistry\Domain\Entities\ContractAsset;
+use App\Business\AssetRegistry\Domain\Exceptions\AssetNotAssignedException;
 use App\Business\AssetRegistry\Domain\Exceptions\ContractNotFoundException;
 
 interface IContractRepository
@@ -20,10 +23,12 @@ interface IContractRepository
 
     public function saveContract(Contract $contract): Contract;
 
+    /** @throws ContractNotFoundException */
     public function deleteContract(string $id): void;
 
     public function addContractAsset(ContractAsset $contractAsset): ContractAsset;
 
+    /** @throws AssetNotAssignedException */
     public function removeContractAsset(string $contractId, string $assetId): void;
 
     public function isSerialNumberTaken(string $serialNumber): bool;

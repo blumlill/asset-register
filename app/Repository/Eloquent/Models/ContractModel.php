@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace App\Repository\Eloquent\Models;
 
@@ -6,7 +8,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class ContractModel extends Model
+final class ContractModel extends Model
 {
     use HasUuids;
 
@@ -25,6 +27,7 @@ class ContractModel extends Model
         'end_date' => 'date',
     ];
 
+    /** @return HasMany<ContractAssetModel, $this> */
     public function contractAssets(): HasMany
     {
         return $this->hasMany(ContractAssetModel::class, 'contract_id');

@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace App\Core\Logging;
 
@@ -27,25 +29,35 @@ final class RequestResponseLogger
                 'duration_ms' => $durationMs,
             ]);
         } catch (Throwable $e) {
-            Log::error('API log write failed: ' . $e->getMessage());
+            Log::error('API log write failed: '.$e->getMessage());
         }
     }
 
+    /**
+     * @param  array<string, string[]>  $headers
+     * @return array<string, string[]>
+     */
     private function maskHeaders(array $headers): array
     {
         $masked = [];
         foreach ($headers as $key => $values) {
             $masked[$key] = $this->isSensitive($key) ? ['***'] : $values;
         }
+
         return $masked;
     }
 
+    /**
+     * @param  array<string, mixed>  $body
+     * @return array<string, mixed>
+     */
     private function maskBody(array $body): array
     {
         $masked = [];
         foreach ($body as $key => $value) {
             $masked[$key] = $this->isSensitive((string) $key) ? '***' : $value;
         }
+
         return $masked;
     }
 
@@ -54,6 +66,7 @@ final class RequestResponseLogger
         return in_array(strtolower($key), self::MASKED_FIELDS, strict: true);
     }
 
+    /** @return array<string, mixed>|null */
     private function decodeBody(string|false $content): ?array
     {
         if ($content === false || $content === '') {

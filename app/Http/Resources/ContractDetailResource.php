@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace App\Http\Resources;
 
@@ -39,6 +41,7 @@ class ContractDetailResource extends JsonResource
         parent::__construct($data);
     }
 
+    /** @return array{id: string, contract_number: string, client_name: string, start_date: string, end_date: string|null, assets: array<int, array<string, string>>} */
     public function toArray(Request $request): array
     {
         return [
@@ -51,6 +54,7 @@ class ContractDetailResource extends JsonResource
         ];
     }
 
+    /** @return array<string, string> */
     private function mapAsset(ContractAssetData $ca): array
     {
         return [

@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 use App\Http\Controllers\AssetController;
 use App\Http\Controllers\ContractController;
@@ -10,4 +12,3 @@ Route::prefix('v1')->group(function (): void {
     Route::post('contracts/{id}/assets', [ContractController::class, 'assignAsset']);
     Route::delete('contracts/{id}/assets/{assetId}', [ContractController::class, 'removeAsset']);
 });
-

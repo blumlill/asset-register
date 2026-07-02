@@ -1,16 +1,13 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace App\Business\AssetRegistry\Domain\Exceptions;
 
-use RuntimeException;
-
-final class ContractNotFoundException extends RuntimeException
+final class ContractNotFoundException extends DomainException
 {
-    public readonly string $errorCode;
-
     public function __construct(string $contractId)
     {
-        $this->errorCode = 'CONTRACT_NOT_FOUND';
-        parent::__construct("Contract '{$contractId}' not found.");
+        parent::__construct(DomainErrorType::NOT_FOUND, 'CONTRACT_NOT_FOUND', "Contract '{$contractId}' not found.");
     }
 }

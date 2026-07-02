@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
@@ -29,11 +31,7 @@ class ContractController extends Controller
     )]
     public function index(): AnonymousResourceCollection
     {
-        $contracts = $this->service->findAll();
-
-        return ContractResource::collection(
-            collect($contracts)->map(fn ($d) => new ContractResource($d)),
-        );
+        return ContractResource::collection($this->service->findAll());
     }
 
     #[OA\Get(

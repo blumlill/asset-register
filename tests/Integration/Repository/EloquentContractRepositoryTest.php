@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Tests\Integration\Repository;
 
@@ -22,10 +24,10 @@ class EloquentContractRepositoryTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->repository = new EloquentContractRepository();
+        $this->repository = new EloquentContractRepository;
     }
 
-    public function testSaveContractCreatesNew(): void
+    public function test_save_contract_creates_new(): void
     {
         $contract = new Contract(
             'c-uuid-1234-5678-abcd-ef0123456789',
@@ -40,7 +42,7 @@ class EloquentContractRepositoryTest extends TestCase
         $this->assertDatabaseHas('contracts', ['contract_number' => 'C-001']);
     }
 
-    public function testFindByIdReturnsContract(): void
+    public function test_find_by_id_returns_contract(): void
     {
         ContractModel::create([
             'id' => 'c-uuid-1234-5678-abcd-ef0123456789',
@@ -54,13 +56,13 @@ class EloquentContractRepositoryTest extends TestCase
         $this->assertSame('C-001', $contract->getContractNumber());
     }
 
-    public function testFindByIdThrowsWhenNotFound(): void
+    public function test_find_by_id_throws_when_not_found(): void
     {
         $this->expectException(ContractNotFoundException::class);
         $this->repository->findById('non-existent');
     }
 
-    public function testFindByIdWithAssetsLoadsRelations(): void
+    public function test_find_by_id_with_assets_loads_relations(): void
     {
         ContractModel::create([
             'id' => 'c-uuid',
@@ -84,11 +86,12 @@ class EloquentContractRepositoryTest extends TestCase
         $aggregate = $this->repository->findByIdWithAssets('c-uuid');
 
         $this->assertCount(1, $aggregate->getContractAssets());
-        $this->assertSame('SN-001', $aggregate->getContractAssets()[0]->getSerialNumber());
-        $this->assertSame('Server X', $aggregate->getAssetDetail('a-uuid')?->getName());
+        $this->assertSame('SN-001', $aggregate->getContractAssets()[0]->serialNumber);
+        $this->assertNotNull($aggregate->getAssetDetail('a-uuid'));
+        $this->assertSame('Server X', $aggregate->getAssetDetail('a-uuid')->getName());
     }
 
-    public function testDeleteContractCascadesContractAssets(): void
+    public function test_delete_contract_cascades_contract_assets(): void
     {
         ContractModel::create([
             'id' => 'c-uuid',
@@ -116,7 +119,7 @@ class EloquentContractRepositoryTest extends TestCase
         $this->assertDatabaseHas('assets', ['id' => 'a-uuid']);
     }
 
-    public function testIsSerialNumberTakenReturnsTrueWhenExists(): void
+    public function test_is_serial_number_taken_returns_true_when_exists(): void
     {
         ContractModel::create([
             'id' => 'c-uuid',
@@ -136,7 +139,7 @@ class EloquentContractRepositoryTest extends TestCase
         $this->assertFalse($this->repository->isSerialNumberTaken('SN-999'));
     }
 
-    public function testAddAndRemoveContractAsset(): void
+    public function test_add_and_remove_contract_asset(): void
     {
         ContractModel::create([
             'id' => 'c-uuid',

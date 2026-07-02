@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace App\Repository\Eloquent\Models;
 
@@ -7,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class AssetModel extends Model
+final class AssetModel extends Model
 {
     use HasUuids;
     use SoftDeletes;
@@ -21,6 +23,7 @@ class AssetModel extends Model
         'model',
     ];
 
+    /** @return HasMany<ContractAssetModel, $this> */
     public function contractAssets(): HasMany
     {
         return $this->hasMany(ContractAssetModel::class, 'asset_id');

@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace App\Business\AssetRegistry\Domain\Entities;
 
@@ -7,17 +9,12 @@ use DateTimeImmutable;
 final class Asset
 {
     public function __construct(
-        private readonly string $id,
+        public readonly string $id,
         private string $name,
         private string $manufacturer,
         private string $model,
         private ?DateTimeImmutable $deletedAt = null,
     ) {}
-
-    public function getId(): string
-    {
-        return $this->id;
-    }
 
     public function getName(): string
     {

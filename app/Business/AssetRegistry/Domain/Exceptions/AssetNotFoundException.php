@@ -1,16 +1,13 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace App\Business\AssetRegistry\Domain\Exceptions;
 
-use RuntimeException;
-
-final class AssetNotFoundException extends RuntimeException
+final class AssetNotFoundException extends DomainException
 {
-    public readonly string $errorCode;
-
     public function __construct(string $assetId)
     {
-        $this->errorCode = 'ASSET_NOT_FOUND';
-        parent::__construct("Asset '{$assetId}' not found.");
+        parent::__construct(DomainErrorType::NOT_FOUND, 'ASSET_NOT_FOUND', "Asset '{$assetId}' not found.");
     }
 }

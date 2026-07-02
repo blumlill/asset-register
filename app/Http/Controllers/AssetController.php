@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
@@ -27,11 +29,7 @@ class AssetController extends Controller
     )]
     public function index(): AnonymousResourceCollection
     {
-        $assets = $this->service->findAll();
-
-        return AssetResource::collection(
-            collect($assets)->map(fn ($d) => new AssetResource($d)),
-        );
+        return AssetResource::collection($this->service->findAll());
     }
 
     #[OA\Get(

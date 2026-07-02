@@ -1,10 +1,13 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace App\Http\Requests;
 
 use App\Business\AssetRegistry\DTOs\UpdateContractData;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Unique;
 use OpenApi\Attributes as OA;
 
 #[OA\RequestBody(
@@ -22,6 +25,7 @@ use OpenApi\Attributes as OA;
 )]
 class UpdateContractRequest extends FormRequest
 {
+    /** @return array<string, list<string|Unique>> */
     public function rules(): array
     {
         return [

@@ -6,7 +6,6 @@ actor Client
 participant "ContractController" as Controller
 participant "ContractService" as Service
 participant "IContractRepository" as IRepo
-participant "ContractAggregate" as Aggregate
 database DB
 
 Client -> Controller : DELETE /api/v1/contracts/{id}/assets/{assetId}
@@ -14,28 +13,32 @@ activate Controller
 Controller -> Service : removeAsset(contractId, assetId)
 activate Service
 
-Service -> IRepo : findByIdWithAssets(contractId)
+Service -> IRepo : findById(contractId)
 activate IRepo
-IRepo -> DB : SELECT contract with assets
+IRepo -> DB : SELECT FROM contracts WHERE id = ?
 
 alt contract not found
     IRepo --> Service : throw ContractNotFoundException
     Service --> Controller : ContractNotFoundException
     Controller --> Client : 404 CONTRACT_NOT_FOUND
 else found
-    IRepo --> Service : ContractAggregate
+    IRepo --> Service : Contract
     deactivate IRepo
 end
-
-Service -> Aggregate : removeAsset(assetId)
-note right: removes from in-memory collection
 
 Service -> IRepo : removeContractAsset(contractId, assetId)
 activate IRepo
 IRepo -> DB : DELETE FROM contract_assets\nWHERE contract_id = ? AND asset_id = ?
-DB --> IRepo : deleted
-IRepo --> Service : void
-deactivate IRepo
+
+alt no rows deleted (asset not assigned to contract)
+    IRepo --> Service : throw AssetNotAssignedException
+    Service --> Controller : AssetNotAssignedException
+    Controller --> Client : 404 ASSET_NOT_ASSIGNED
+else deleted
+    DB --> IRepo : 1 row deleted
+    IRepo --> Service : void
+    deactivate IRepo
+end
 
 Service --> Controller : void
 deactivate Service

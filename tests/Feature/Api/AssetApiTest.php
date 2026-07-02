@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Tests\Feature\Api;
 
@@ -12,7 +14,7 @@ class AssetApiTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function testListAssetsReturnsEmptyArray(): void
+    public function test_list_assets_returns_empty_array(): void
     {
         $response = $this->getJson('/api/v1/assets');
 
@@ -20,7 +22,29 @@ class AssetApiTest extends TestCase
         $this->assertEmpty($response->json('data'));
     }
 
-    public function testCreateAssetReturns201(): void
+    public function test_list_assets_returns_all_assets(): void
+    {
+        AssetModel::create([
+            'id' => 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+            'name' => 'Server Alpha',
+            'manufacturer' => 'Dell',
+            'model' => 'PowerEdge R750',
+        ]);
+        AssetModel::create([
+            'id' => 'a1b2c3d4-e5f6-7890-abcd-ef1234567891',
+            'name' => 'Server Beta',
+            'manufacturer' => 'HP',
+            'model' => 'ProLiant DL380',
+        ]);
+
+        $response = $this->getJson('/api/v1/assets');
+
+        $response->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonStructure(['data' => [['id', 'name', 'manufacturer', 'model']]]);
+    }
+
+    public function test_create_asset_returns201(): void
     {
         $response = $this->postJson('/api/v1/assets', [
             'name' => 'Server Alpha',
@@ -37,7 +61,7 @@ class AssetApiTest extends TestCase
         $this->assertDatabaseHas('assets', ['name' => 'Server Alpha']);
     }
 
-    public function testCreateAssetValidationFailsWithMissingFields(): void
+    public function test_create_asset_validation_fails_with_missing_fields(): void
     {
         $response = $this->postJson('/api/v1/assets', []);
 
@@ -46,7 +70,7 @@ class AssetApiTest extends TestCase
             ->assertJsonStructure(['error' => ['code', 'message', 'details']]);
     }
 
-    public function testShowAssetReturns200(): void
+    public function test_show_asset_returns200(): void
     {
         $asset = AssetModel::create([
             'id' => 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
@@ -60,7 +84,7 @@ class AssetApiTest extends TestCase
         $response->assertOk()->assertJsonPath('data.name', 'Server Beta');
     }
 
-    public function testShowAssetReturns404WhenNotFound(): void
+    public function test_show_asset_returns404_when_not_found(): void
     {
         $response = $this->getJson('/api/v1/assets/non-existent-uuid');
 
@@ -68,7 +92,7 @@ class AssetApiTest extends TestCase
             ->assertJsonPath('error.code', 'ASSET_NOT_FOUND');
     }
 
-    public function testUpdateAssetReturns200(): void
+    public function test_update_asset_returns200(): void
     {
         $asset = AssetModel::create([
             'id' => 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
@@ -87,7 +111,7 @@ class AssetApiTest extends TestCase
         $this->assertDatabaseHas('assets', ['id' => $asset->id, 'name' => 'New Name']);
     }
 
-    public function testDeleteAssetReturns204(): void
+    public function test_delete_asset_returns204(): void
     {
         $asset = AssetModel::create([
             'id' => 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
@@ -102,7 +126,7 @@ class AssetApiTest extends TestCase
         $this->assertSoftDeleted('assets', ['id' => $asset->id]);
     }
 
-    public function testDeleteAssetReturns409WhenHasActiveAssignments(): void
+    public function test_delete_asset_returns409_when_has_active_assignments(): void
     {
         $asset = AssetModel::create([
             'id' => 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',

@@ -1,16 +1,13 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace App\Business\AssetRegistry\Domain\Exceptions;
 
-use RuntimeException;
-
-final class SerialNumberTakenException extends RuntimeException
+final class SerialNumberTakenException extends DomainException
 {
-    public readonly string $errorCode;
-
     public function __construct(string $serialNumber)
     {
-        $this->errorCode = 'SERIAL_NUMBER_TAKEN';
-        parent::__construct("Serial number '{$serialNumber}' is already in use.");
+        parent::__construct(DomainErrorType::CONFLICT, 'SERIAL_NUMBER_TAKEN', "Serial number '{$serialNumber}' is already in use.");
     }
 }

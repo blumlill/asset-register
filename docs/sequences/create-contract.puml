@@ -1,0 +1,45 @@
+@startuml create-contract
+!theme plain
+title POST /api/v1/contracts — Create Contract
+
+actor Client
+participant "ContractController" as Controller
+participant "CreateContractRequest" as Request
+participant "ContractService" as Service
+participant "IContractRepository" as IRepo
+participant "ContractMapper" as Mapper
+participant "ContractModel" as Model
+database DB
+
+Client -> Controller : POST /api/v1/contracts\n{contract_number, client_name, start_date, end_date?}
+activate Controller
+
+Controller -> Request : validate()
+
+alt validation fails
+    Request --> Controller : ValidationException (422)
+    Controller --> Client : 422 VALIDATION_ERROR
+else validation passes
+    Controller -> Service : create(CreateContractData)
+    activate Service
+
+    Service -> Service : new Contract(uuid, contract_number, client_name, start_date, end_date?)
+    Service -> IRepo : saveContract(Contract)
+    activate IRepo
+
+    IRepo -> Model : find / new ContractModel
+    Model -> DB : INSERT INTO contracts ...
+    DB --> Model : saved row
+    IRepo -> Mapper : fromModel(ContractModel)
+    Mapper --> IRepo : Contract entity
+    IRepo --> Service : Contract
+    deactivate IRepo
+
+    Service --> Controller : ContractData DTO
+    deactivate Service
+
+    Controller --> Client : 201 {data: {id, contract_number, client_name, start_date, end_date}}
+end
+
+deactivate Controller
+@enduml

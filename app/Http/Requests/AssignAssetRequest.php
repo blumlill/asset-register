@@ -1,9 +1,13 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace App\Http\Requests;
 
 use App\Business\AssetRegistry\DTOs\AssignAssetData;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Exists;
 use OpenApi\Attributes as OA;
 
 #[OA\RequestBody(
@@ -19,10 +23,11 @@ use OpenApi\Attributes as OA;
 )]
 class AssignAssetRequest extends FormRequest
 {
+    /** @return array<string, list<string|Exists>> */
     public function rules(): array
     {
         return [
-            'asset_id' => ['required', 'string', 'uuid', 'exists:assets,id'],
+            'asset_id' => ['required', 'string', 'uuid', Rule::exists('assets', 'id')->whereNull('deleted_at')],
             'serial_number' => ['required', 'string', 'max:100'],
         ];
     }

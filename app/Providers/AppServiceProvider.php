@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace App\Providers;
 
@@ -17,7 +19,8 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->bind(IAssetRepository::class, EloquentAssetRepository::class);
         $this->app->bind(IContractRepository::class, EloquentContractRepository::class);
-        $this->app->bind(IUuidGenerator::class, fn () => new class implements IUuidGenerator {
+        $this->app->bind(IUuidGenerator::class, fn () => new class implements IUuidGenerator
+        {
             public function generate(): string
             {
                 return (string) Str::uuid();

@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Tests\Feature\Api;
 
@@ -12,7 +14,7 @@ class ContractApiTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function testListContractsReturnsEmptyArray(): void
+    public function test_list_contracts_returns_empty_array(): void
     {
         $response = $this->getJson('/api/v1/contracts');
 
@@ -20,7 +22,29 @@ class ContractApiTest extends TestCase
         $this->assertEmpty($response->json('data'));
     }
 
-    public function testCreateContractReturns201(): void
+    public function test_list_contracts_returns_all_contracts(): void
+    {
+        ContractModel::create([
+            'id' => 'c1d2e3f4-0000-0000-0000-000000000001',
+            'contract_number' => 'C-001',
+            'client_name' => 'Acme',
+            'start_date' => '2026-01-01',
+        ]);
+        ContractModel::create([
+            'id' => 'c1d2e3f4-0000-0000-0000-000000000002',
+            'contract_number' => 'C-002',
+            'client_name' => 'Globex',
+            'start_date' => '2026-03-01',
+        ]);
+
+        $response = $this->getJson('/api/v1/contracts');
+
+        $response->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonStructure(['data' => [['id', 'contract_number', 'client_name', 'start_date']]]);
+    }
+
+    public function test_create_contract_returns201(): void
     {
         $response = $this->postJson('/api/v1/contracts', [
             'contract_number' => 'C-2026-001',
@@ -38,7 +62,7 @@ class ContractApiTest extends TestCase
         $this->assertDatabaseHas('contracts', ['contract_number' => 'C-2026-001']);
     }
 
-    public function testCreateContractValidationFailsWithDuplicateNumber(): void
+    public function test_create_contract_validation_fails_with_duplicate_number(): void
     {
         ContractModel::create([
             'id' => 'c1d2e3f4-0000-0000-0000-000000000001',
@@ -56,7 +80,7 @@ class ContractApiTest extends TestCase
         $response->assertUnprocessable()->assertJsonPath('error.code', 'VALIDATION_ERROR');
     }
 
-    public function testShowContractReturnsDetailWithAssets(): void
+    public function test_show_contract_returns_detail_with_assets(): void
     {
         $contract = ContractModel::create([
             'id' => 'c1d2e3f4-0000-0000-0000-000000000001',
@@ -86,14 +110,14 @@ class ContractApiTest extends TestCase
             ->assertJsonPath('data.assets.0.asset_name', 'Server X');
     }
 
-    public function testShowContractReturns404WhenNotFound(): void
+    public function test_show_contract_returns404_when_not_found(): void
     {
         $response = $this->getJson('/api/v1/contracts/non-existent');
 
         $response->assertNotFound()->assertJsonPath('error.code', 'CONTRACT_NOT_FOUND');
     }
 
-    public function testUpdateContractReturns200(): void
+    public function test_update_contract_returns200(): void
     {
         $contract = ContractModel::create([
             'id' => 'c1d2e3f4-0000-0000-0000-000000000001',
@@ -112,7 +136,7 @@ class ContractApiTest extends TestCase
         $this->assertDatabaseHas('contracts', ['id' => $contract->id, 'client_name' => 'New Name']);
     }
 
-    public function testDeleteContractReturns204AndCascades(): void
+    public function test_delete_contract_returns204_and_cascades(): void
     {
         $contract = ContractModel::create([
             'id' => 'c1d2e3f4-0000-0000-0000-000000000001',

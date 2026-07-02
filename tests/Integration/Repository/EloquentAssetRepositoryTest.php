@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Tests\Integration\Repository;
 
@@ -21,41 +23,41 @@ class EloquentAssetRepositoryTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->repository = new EloquentAssetRepository();
+        $this->repository = new EloquentAssetRepository;
     }
 
-    public function testSaveCreatesNewAsset(): void
+    public function test_save_creates_new_asset(): void
     {
-        $asset = new Asset('test-uuid-1234-5678-abcd-ef0123456789', 'Server X', 'Dell', 'Model R750');
+        $asset = new Asset('019f19a0-94ea-7178-80fc-67f72e3bd2b3', 'Server X', 'Dell', 'Model R750');
 
         $saved = $this->repository->save($asset);
 
-        $this->assertSame('test-uuid-1234-5678-abcd-ef0123456789', $saved->getId());
+        $this->assertSame('019f19a0-94ea-7178-80fc-67f72e3bd2b3', $saved->id);
         $this->assertSame('Server X', $saved->getName());
-        $this->assertDatabaseHas('assets', ['id' => 'test-uuid-1234-5678-abcd-ef0123456789', 'name' => 'Server X']);
+        $this->assertDatabaseHas('assets', ['id' => '019f19a0-94ea-7178-80fc-67f72e3bd2b3', 'name' => 'Server X']);
     }
 
-    public function testFindByIdReturnsAsset(): void
+    public function test_find_by_id_returns_asset(): void
     {
         AssetModel::create([
-            'id' => 'test-uuid-1234-5678-abcd-ef0123456789',
+            'id' => '019f19a0-94ea-7178-80fc-67f72e3bd2b3',
             'name' => 'Server X',
             'manufacturer' => 'Dell',
             'model' => 'Model R750',
         ]);
 
-        $asset = $this->repository->findById('test-uuid-1234-5678-abcd-ef0123456789');
+        $asset = $this->repository->findById('019f19a0-94ea-7178-80fc-67f72e3bd2b3');
 
         $this->assertSame('Server X', $asset->getName());
     }
 
-    public function testFindByIdThrowsWhenNotFound(): void
+    public function test_find_by_id_throws_when_not_found(): void
     {
         $this->expectException(AssetNotFoundException::class);
         $this->repository->findById('non-existent-uuid');
     }
 
-    public function testFindAllReturnsOnlyActiveAssets(): void
+    public function test_find_all_returns_only_active_assets(): void
     {
         AssetModel::create(['id' => 'uuid-1', 'name' => 'A', 'manufacturer' => 'M', 'model' => 'X']);
         AssetModel::create(['id' => 'uuid-2', 'name' => 'B', 'manufacturer' => 'M', 'model' => 'Y']);
@@ -66,27 +68,27 @@ class EloquentAssetRepositoryTest extends TestCase
         $assets = $this->repository->findAll();
 
         $this->assertCount(1, $assets);
-        $this->assertSame('uuid-1', $assets[0]->getId());
+        $this->assertSame('uuid-1', $assets[0]->id);
     }
 
-    public function testSaveSoftDeletesAsset(): void
+    public function test_save_soft_deletes_asset(): void
     {
         $model = AssetModel::create([
-            'id' => 'test-uuid-1234-5678-abcd-ef0123456789',
+            'id' => '019f19a0-94ea-7178-80fc-67f72e3bd2b3',
             'name' => 'Server X',
             'manufacturer' => 'Dell',
             'model' => 'Model R750',
         ]);
 
-        $asset = new Asset('test-uuid-1234-5678-abcd-ef0123456789', 'Server X', 'Dell', 'Model R750');
-        $asset->softDelete(new DateTimeImmutable());
+        $asset = new Asset('019f19a0-94ea-7178-80fc-67f72e3bd2b3', 'Server X', 'Dell', 'Model R750');
+        $asset->softDelete(new DateTimeImmutable);
 
         $this->repository->save($asset);
 
-        $this->assertSoftDeleted('assets', ['id' => 'test-uuid-1234-5678-abcd-ef0123456789']);
+        $this->assertSoftDeleted('assets', ['id' => '019f19a0-94ea-7178-80fc-67f72e3bd2b3']);
     }
 
-    public function testHasActiveAssignmentsReturnsTrueWhenAssigned(): void
+    public function test_has_active_assignments_returns_true_when_assigned(): void
     {
         AssetModel::create(['id' => 'asset-uuid', 'name' => 'A', 'manufacturer' => 'M', 'model' => 'X']);
         ContractModel::create([
@@ -105,7 +107,7 @@ class EloquentAssetRepositoryTest extends TestCase
         $this->assertTrue($this->repository->hasActiveAssignments('asset-uuid'));
     }
 
-    public function testHasActiveAssignmentsReturnsFalseWhenNone(): void
+    public function test_has_active_assignments_returns_false_when_none(): void
     {
         AssetModel::create(['id' => 'asset-uuid', 'name' => 'A', 'manufacturer' => 'M', 'model' => 'X']);
 

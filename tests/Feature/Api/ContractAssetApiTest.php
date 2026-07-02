@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Tests\Feature\Api;
 
@@ -13,6 +15,7 @@ class ContractAssetApiTest extends TestCase
     use RefreshDatabase;
 
     private ContractModel $contract;
+
     private AssetModel $asset;
 
     protected function setUp(): void
@@ -34,7 +37,7 @@ class ContractAssetApiTest extends TestCase
         ]);
     }
 
-    public function testAssignAssetReturns201(): void
+    public function test_assign_asset_returns201(): void
     {
         $response = $this->postJson("/api/v1/contracts/{$this->contract->id}/assets", [
             'asset_id' => $this->asset->id,
@@ -49,7 +52,7 @@ class ContractAssetApiTest extends TestCase
         $this->assertDatabaseHas('contract_assets', ['serial_number' => 'SN-001']);
     }
 
-    public function testAssignAssetReturns409WhenDuplicateAssignment(): void
+    public function test_assign_asset_returns409_when_duplicate_assignment(): void
     {
         ContractAssetModel::create([
             'id' => 'ca000000-0000-0000-0000-000000000001',
@@ -66,7 +69,7 @@ class ContractAssetApiTest extends TestCase
         $response->assertStatus(409)->assertJsonPath('error.code', 'ASSET_ALREADY_ASSIGNED');
     }
 
-    public function testAssignAssetReturns409WhenSerialNumberTaken(): void
+    public function test_assign_asset_returns409_when_serial_number_taken(): void
     {
         $asset2 = AssetModel::create([
             'id' => 'a1b2c3d4-0000-0000-0000-000000000002',
@@ -90,7 +93,7 @@ class ContractAssetApiTest extends TestCase
         $response->assertStatus(409)->assertJsonPath('error.code', 'SERIAL_NUMBER_TAKEN');
     }
 
-    public function testAssignAssetReturns422WhenAssetNotInDB(): void
+    public function test_assign_asset_returns422_when_asset_not_in_db(): void
     {
         $response = $this->postJson("/api/v1/contracts/{$this->contract->id}/assets", [
             'asset_id' => 'non-existent-uuid-0000-000000000000',
@@ -100,7 +103,7 @@ class ContractAssetApiTest extends TestCase
         $response->assertUnprocessable();
     }
 
-    public function testRemoveAssetReturns204(): void
+    public function test_remove_asset_returns204(): void
     {
         ContractAssetModel::create([
             'id' => 'ca000000-0000-0000-0000-000000000001',

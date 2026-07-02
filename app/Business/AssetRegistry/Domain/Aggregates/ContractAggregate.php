@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace App\Business\AssetRegistry\Domain\Aggregates;
 
@@ -16,26 +18,21 @@ final class ContractAggregate
     private array $assetDetails = [];
 
     /**
-     * @param ContractAsset[] $contractAssets
-     * @param Asset[]         $assetDetails
+     * @param  ContractAsset[]  $contractAssets
+     * @param  Asset[]  $assetDetails
      */
     public function __construct(
-        private readonly Contract $contract,
+        public readonly Contract $contract,
         array $contractAssets = [],
         array $assetDetails = [],
     ) {
         foreach ($contractAssets as $ca) {
-            $this->contractAssets[$ca->getAssetId()] = $ca;
+            $this->contractAssets[$ca->assetId] = $ca;
         }
 
         foreach ($assetDetails as $asset) {
-            $this->assetDetails[$asset->getId()] = $asset;
+            $this->assetDetails[$asset->id] = $asset;
         }
-    }
-
-    public function getContract(): Contract
-    {
-        return $this->contract;
     }
 
     /** @return ContractAsset[] */
@@ -51,14 +48,19 @@ final class ContractAggregate
 
     public function assignAsset(ContractAsset $contractAsset): void
     {
-        if (isset($this->contractAssets[$contractAsset->getAssetId()])) {
+        if (isset($this->contractAssets[$contractAsset->assetId])) {
             throw new AssetAlreadyAssignedException(
-                $contractAsset->getAssetId(),
-                $this->contract->getId(),
+                $contractAsset->assetId,
+                $this->contract->id,
             );
         }
 
-        $this->contractAssets[$contractAsset->getAssetId()] = $contractAsset;
+        $this->contractAssets[$contractAsset->assetId] = $contractAsset;
+    }
+
+    public function addAssetDetail(Asset $asset): void
+    {
+        $this->assetDetails[$asset->id] = $asset;
     }
 
     public function removeAsset(string $assetId): void

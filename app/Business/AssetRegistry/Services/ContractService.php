@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace App\Business\AssetRegistry\Services;
 
@@ -58,7 +60,6 @@ final class ContractService
 
     public function delete(string $id): void
     {
-        $this->contractRepository->findById($id);
         $this->contractRepository->deleteContract($id);
     }
 
@@ -81,8 +82,7 @@ final class ContractService
     public function assignAsset(string $contractId, AssignAssetData $data): ContractDetailData
     {
         $aggregate = $this->contractRepository->findByIdWithAssets($contractId);
-
-        $this->assetRepository->findById($data->assetId);
+        $asset = $this->assetRepository->findById($data->assetId);
 
         if ($this->contractRepository->isSerialNumberTaken($data->serialNumber)) {
             throw new SerialNumberTakenException($data->serialNumber);
@@ -96,25 +96,22 @@ final class ContractService
         );
 
         $aggregate->assignAsset($contractAsset);
-
+        $aggregate->addAssetDetail($asset);
         $this->contractRepository->addContractAsset($contractAsset);
 
-        return $this->toDetailData(
-            $this->contractRepository->findByIdWithAssets($contractId),
-        );
+        return $this->toDetailData($aggregate);
     }
 
     public function removeAsset(string $contractId, string $assetId): void
     {
-        $aggregate = $this->contractRepository->findByIdWithAssets($contractId);
-        $aggregate->removeAsset($assetId);
+        $this->contractRepository->findById($contractId);
         $this->contractRepository->removeContractAsset($contractId, $assetId);
     }
 
     private function toContractData(Contract $contract): ContractData
     {
         return new ContractData(
-            $contract->getId(),
+            $contract->id,
             $contract->getContractNumber(),
             $contract->getClientName(),
             $contract->getStartDate()->format('Y-m-d'),
@@ -124,16 +121,16 @@ final class ContractService
 
     private function toDetailData(ContractAggregate $aggregate): ContractDetailData
     {
-        $contract = $aggregate->getContract();
+        $contract = $aggregate->contract;
 
         $assets = array_map(
             function (ContractAsset $ca) use ($aggregate): ContractAssetData {
-                $asset = $aggregate->getAssetDetail($ca->getAssetId());
+                $asset = $aggregate->getAssetDetail($ca->assetId);
 
                 return new ContractAssetData(
-                    $ca->getId(),
-                    $ca->getAssetId(),
-                    $ca->getSerialNumber(),
+                    $ca->id,
+                    $ca->assetId,
+                    $ca->serialNumber,
                     $asset?->getName() ?? '',
                     $asset?->getManufacturer() ?? '',
                     $asset?->getModel() ?? '',
@@ -143,7 +140,7 @@ final class ContractService
         );
 
         return new ContractDetailData(
-            $contract->getId(),
+            $contract->id,
             $contract->getContractNumber(),
             $contract->getClientName(),
             $contract->getStartDate()->format('Y-m-d'),

@@ -1,0 +1,51 @@
+@startuml update-contract
+!theme plain
+title PUT /api/v1/contracts/{id} — Update Contract
+
+actor Client
+participant "ContractController" as Controller
+participant "UpdateContractRequest" as Request
+participant "ContractService" as Service
+participant "IContractRepository" as IRepo
+participant "ContractMapper" as Mapper
+database DB
+
+Client -> Controller : PUT /api/v1/contracts/{id}\n{contract_number, client_name, start_date, end_date?}
+activate Controller
+
+Controller -> Request : validate()
+
+alt validation fails
+    Request --> Controller : ValidationException (422)
+    Controller --> Client : 422 VALIDATION_ERROR
+else validation passes
+    Controller -> Service : update(id, UpdateContractData)
+    activate Service
+
+    Service -> IRepo : findById(id)
+    activate IRepo
+    IRepo -> DB : SELECT FROM contracts WHERE id = ?
+    alt not found
+        DB --> IRepo : null
+        IRepo --> Service : throw ContractNotFoundException
+        Service --> Controller : ContractNotFoundException
+        Controller --> Client : 404 CONTRACT_NOT_FOUND
+    else found
+        DB --> IRepo : row
+        IRepo -> Mapper : fromModel()
+        IRepo --> Service : Contract entity
+        deactivate IRepo
+    end
+
+    Service -> Service : contract.update(contract_number, client_name, start_date, end_date?)
+    Service -> IRepo : saveContract(Contract)
+    IRepo -> DB : UPDATE contracts ...
+    IRepo --> Service : Contract
+    Service --> Controller : ContractData DTO
+    deactivate Service
+
+    Controller --> Client : 200 {data: {id, contract_number, client_name, start_date, end_date}}
+end
+
+deactivate Controller
+@enduml

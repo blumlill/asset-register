@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Tests\Unit\Business;
 
@@ -26,8 +28,11 @@ use PHPUnit\Framework\TestCase;
 class ContractServiceTest extends TestCase
 {
     private IContractRepository&MockObject $contractRepository;
+
     private IAssetRepository&MockObject $assetRepository;
+
     private IUuidGenerator&MockObject $uuidGenerator;
+
     private ContractService $service;
 
     protected function setUp(): void
@@ -44,7 +49,7 @@ class ContractServiceTest extends TestCase
         );
     }
 
-    public function testCreate(): void
+    public function test_create(): void
     {
         $dto = new CreateContractData('C-001', 'Acme Corp', '2026-01-01', null);
 
@@ -62,7 +67,7 @@ class ContractServiceTest extends TestCase
         $this->assertNull($result->endDate);
     }
 
-    public function testUpdate(): void
+    public function test_update(): void
     {
         $contract = new Contract('c-uuid', 'C-001', 'Old Name', new DateTimeImmutable('2026-01-01'));
         $dto = new UpdateContractData('C-002', 'New Name', '2026-06-01', '2026-12-31');
@@ -78,7 +83,7 @@ class ContractServiceTest extends TestCase
         $this->assertSame('2026-12-31', $result->endDate);
     }
 
-    public function testUpdateThrowsWhenNotFound(): void
+    public function test_update_throws_when_not_found(): void
     {
         $this->contractRepository->method('findById')
             ->willThrowException(new ContractNotFoundException('c-uuid'));
@@ -87,16 +92,14 @@ class ContractServiceTest extends TestCase
         $this->service->update('c-uuid', new UpdateContractData('C-001', 'Corp', '2026-01-01', null));
     }
 
-    public function testDelete(): void
+    public function test_delete(): void
     {
-        $contract = new Contract('c-uuid', 'C-001', 'Corp', new DateTimeImmutable('2026-01-01'));
-        $this->contractRepository->method('findById')->willReturn($contract);
         $this->contractRepository->expects($this->once())->method('deleteContract')->with('c-uuid');
 
         $this->service->delete('c-uuid');
     }
 
-    public function testFindByIdWithAssets(): void
+    public function test_find_by_id_with_assets(): void
     {
         $contract = new Contract('c-uuid', 'C-001', 'Acme', new DateTimeImmutable('2026-01-01'));
         $ca = new ContractAsset('ca-uuid', 'c-uuid', 'a-uuid', 'SN-001');
@@ -113,17 +116,13 @@ class ContractServiceTest extends TestCase
         $this->assertSame('Server X', $result->assets[0]->assetName);
     }
 
-    public function testAssignAsset(): void
+    public function test_assign_asset(): void
     {
         $contract = new Contract('c-uuid', 'C-001', 'Acme', new DateTimeImmutable('2026-01-01'));
-        $emptyAggregate = new ContractAggregate($contract);
+        $aggregate = new ContractAggregate($contract);
         $asset = new Asset('a-uuid', 'Server X', 'Dell', 'Model Y');
 
-        $ca = new ContractAsset('generated-uuid', 'c-uuid', 'a-uuid', 'SN-001');
-        $filledAggregate = new ContractAggregate($contract, [$ca], [$asset]);
-
-        $this->contractRepository->method('findByIdWithAssets')
-            ->willReturnOnConsecutiveCalls($emptyAggregate, $filledAggregate);
+        $this->contractRepository->method('findByIdWithAssets')->willReturn($aggregate);
         $this->assetRepository->method('findById')->willReturn($asset);
         $this->contractRepository->method('isSerialNumberTaken')->willReturn(false);
         $this->contractRepository->expects($this->once())->method('addContractAsset')
@@ -133,9 +132,10 @@ class ContractServiceTest extends TestCase
 
         $this->assertCount(1, $result->assets);
         $this->assertSame('SN-001', $result->assets[0]->serialNumber);
+        $this->assertSame('Server X', $result->assets[0]->assetName);
     }
 
-    public function testAssignAssetThrowsWhenSerialNumberTaken(): void
+    public function test_assign_asset_throws_when_serial_number_taken(): void
     {
         $contract = new Contract('c-uuid', 'C-001', 'Acme', new DateTimeImmutable('2026-01-01'));
         $aggregate = new ContractAggregate($contract);
@@ -149,7 +149,7 @@ class ContractServiceTest extends TestCase
         $this->service->assignAsset('c-uuid', new AssignAssetData('a-uuid', 'SN-TAKEN'));
     }
 
-    public function testAssignAssetThrowsWhenAssetAlreadyAssigned(): void
+    public function test_assign_asset_throws_when_asset_already_assigned(): void
     {
         $contract = new Contract('c-uuid', 'C-001', 'Acme', new DateTimeImmutable('2026-01-01'));
         $existingCa = new ContractAsset('ca-uuid', 'c-uuid', 'a-uuid', 'SN-EXISTING');
@@ -164,7 +164,7 @@ class ContractServiceTest extends TestCase
         $this->service->assignAsset('c-uuid', new AssignAssetData('a-uuid', 'SN-NEW'));
     }
 
-    public function testAssignAssetThrowsWhenAssetNotFound(): void
+    public function test_assign_asset_throws_when_asset_not_found(): void
     {
         $contract = new Contract('c-uuid', 'C-001', 'Acme', new DateTimeImmutable('2026-01-01'));
         $aggregate = new ContractAggregate($contract);
@@ -177,13 +177,11 @@ class ContractServiceTest extends TestCase
         $this->service->assignAsset('c-uuid', new AssignAssetData('a-uuid', 'SN-001'));
     }
 
-    public function testRemoveAsset(): void
+    public function test_remove_asset(): void
     {
         $contract = new Contract('c-uuid', 'C-001', 'Acme', new DateTimeImmutable('2026-01-01'));
-        $ca = new ContractAsset('ca-uuid', 'c-uuid', 'a-uuid', 'SN-001');
-        $aggregate = new ContractAggregate($contract, [$ca]);
 
-        $this->contractRepository->method('findByIdWithAssets')->willReturn($aggregate);
+        $this->contractRepository->method('findById')->willReturn($contract);
         $this->contractRepository->expects($this->once())->method('removeContractAsset')
             ->with('c-uuid', 'a-uuid');
 

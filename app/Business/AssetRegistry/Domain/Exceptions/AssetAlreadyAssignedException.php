@@ -1,16 +1,13 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace App\Business\AssetRegistry\Domain\Exceptions;
 
-use RuntimeException;
-
-final class AssetAlreadyAssignedException extends RuntimeException
+final class AssetAlreadyAssignedException extends DomainException
 {
-    public readonly string $errorCode;
-
     public function __construct(string $assetId, string $contractId)
     {
-        $this->errorCode = 'ASSET_ALREADY_ASSIGNED';
-        parent::__construct("Asset '{$assetId}' is already assigned to contract '{$contractId}'.");
+        parent::__construct(DomainErrorType::CONFLICT, 'ASSET_ALREADY_ASSIGNED', "Asset '{$assetId}' is already assigned to contract '{$contractId}'.");
     }
 }

@@ -1,58 +1,140 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Asset Register API
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A JSON REST API for managing physical assets and the contracts they are assigned to. Built with Laravel 13, PHP 8.5, 
+and MySQL 8, following a Hexagonal (Clean) Architecture that keeps domain logic free of framework dependencies.
 
-## About Laravel
+Full architecture details, domain model, and sequence diagrams are in [`docs/`](docs/) and [`.claude/CLAUDE.md`](.claude/CLAUDE.md)
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Local environment
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
-
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+**First-time setup** — builds images, starts containers, runs migrations, and seeds the database:
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+make build
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+**IDE support** — installs all dependencies (including dev) into a host-side `vendor/` for IDE indexing. No local PHP 
+or Composer required.
 
-## Contributing
+```bash
+make vendor
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+**Subsequent starts:**
 
-## Code of Conduct
+```bash
+make up      # start containers and apply pending migrations
+make down    # stop containers and remove volumes
+make restart # restart containers
+make logs    # tail container logs
+make shell   # open a bash shell in the app container
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+**Database utilities:**
 
-## Security Vulnerabilities
+```bash
+make migrate # run pending migrations
+make seed    # run seeders
+make fresh   # drop all tables, re-migrate, and re-seed
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+---
 
-## License
+## API Documentation
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Interactive Swagger UI is available at [`http://localhost:8080/api/docs`](http://localhost:8080/api/docs) after `make build`.
+
+The endpoint is protected by HTTP Basic Auth. Default credentials are set in `.env` (`SWAGGER_USER` / `SWAGGER_PASSWORD`):
+
+| Field    | Default   |
+|----------|-----------|
+| User     | `swagger` |
+| Password | `secret`  |
+
+---
+
+## Tests
+
+The test suite runs in an isolated Docker environment that is spun up and torn down automatically — local dev containers
+are unaffected:
+
+```bash
+make test
+```
+
+---
+
+## Linting & static analysis
+
+`make lint` runs two tools in sequence. Both must pass clean.
+
+```bash
+make lint
+```
+
+| Tool                                              | Purpose                                                          |
+|---------------------------------------------------|------------------------------------------------------------------|
+| [Laravel Pint](https://laravel.com/docs/pint)     | Fixes code style to the Laravel preset                           |
+|                                                   | (PSR-12 + Laravel conventions)                                   |
+| ................................................. | ................................................................ |
+| [PHPStan](https://phpstan.org) via                | Static analysis at level 6, Laravel-aware                        |
+| [Larastan](https://github.com/larastan/larastan)  |                                                                  |
+
+Requires a host-side `vendor/` directory — run `make vendor` first if you haven't already.
+
+---
+
+## Architecture
+
+```
+app/
+  Business/       # Pure domain — no Illuminate imports
+  Repository/     # Eloquent adapters implementing Business contracts
+  Http/           # Controllers, FormRequests, API Resources
+  Core/           # Logging middleware, shared infrastructure
+```
+
+Dependency direction is always inward: `Http` → `Business` ← `Repository`. Eloquent models never cross the 
+`Repository/Eloquent/Mappers` boundary.
+
+- [`docs/architecture.puml`](docs/architecture.puml) — component diagram
+- [`docs/domain-model.puml`](docs/domain-model.puml) — domain model
+- [`docs/sequences/`](docs/sequences/) — per-operation sequence diagrams
+
+---
+
+## Tech choices
+
+| Technology               | Reason                                                                     |
+|--------------------------|----------------------------------------------------------------------------|
+| Laravel 13               | Mature HTTP, DI, migration, and testing primitives — reduces boilerplate   |
+|                          | without leaking into domain logic                                          |
+| ........................ | .......................................................................... |
+| PHP 8.5                  | `readonly` classes, enums, and fibers make value objects and DTOs          |
+|                          | first-class citizens                                                       |
+| ........................ | .......................................................................... |
+| MySQL 8                  | Window functions and JSON columns for log querying; wide hosting support   |
+| ........................ | .......................................................................... |
+| Docker / Compose         | Reproducible dev and test environments; multi-stage build keeps the        |
+|                          | production image lean                                                      |
+| ........................ | .......................................................................... |
+| zircote/swagger-php      | Attribute-based OpenAPI annotations keep docs co-located with the code     |
+|                          | code they describe                                                         |
+| ........................ | .......................................................................... |
+| Laravel Pint + PHPStan   | Automated formatting and static analysis — enforces PSR-12 and type        |
+|                          | correctness on every run                                                   |
+
+---
+
+## Future improvements
+
+- **Audit trail via domain events** — the domain model has natural event boundaries; introducing domain events and 
+persisting them would give a full history of changes without relying on soft deletes or log scraping.
+- **Async log writes** — `LogApiRequest::terminate()` already runs after the response is flushed; moving persistence to 
+a queued job would eliminate any remaining write latency on high-traffic endpoints.
+- **Role-based access control** — the current API has no user concept; adding a thin auth layer (Sanctum + policies) 
+would allow per-contract ownership and read-only consumer tokens.
+- **Pagination and filtering on list endpoints** — assets and contracts can grow large; cursor-based pagination and 
+filter-by-status query params would be straightforward additions given the repository interface abstraction.

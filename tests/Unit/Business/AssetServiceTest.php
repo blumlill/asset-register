@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Tests\Unit\Business;
 
@@ -18,7 +20,9 @@ use PHPUnit\Framework\TestCase;
 class AssetServiceTest extends TestCase
 {
     private IAssetRepository&MockObject $repository;
+
     private IUuidGenerator&MockObject $uuidGenerator;
+
     private AssetService $service;
 
     protected function setUp(): void
@@ -29,7 +33,7 @@ class AssetServiceTest extends TestCase
         $this->service = new AssetService($this->repository, $this->uuidGenerator);
     }
 
-    public function testCreate(): void
+    public function test_create(): void
     {
         $dto = new CreateAssetData('Server X', 'Dell', 'PowerEdge R750');
 
@@ -46,7 +50,7 @@ class AssetServiceTest extends TestCase
         $this->assertSame('PowerEdge R750', $result->model);
     }
 
-    public function testUpdate(): void
+    public function test_update(): void
     {
         $asset = new Asset('asset-uuid', 'Old Name', 'Dell', 'Old Model');
         $dto = new UpdateAssetData('New Name', 'HP', 'New Model');
@@ -61,7 +65,7 @@ class AssetServiceTest extends TestCase
         $this->assertSame('New Model', $result->model);
     }
 
-    public function testUpdateThrowsWhenNotFound(): void
+    public function test_update_throws_when_not_found(): void
     {
         $this->repository->method('findById')
             ->willThrowException(new AssetNotFoundException('asset-uuid'));
@@ -70,7 +74,7 @@ class AssetServiceTest extends TestCase
         $this->service->update('asset-uuid', new UpdateAssetData('x', 'y', 'z'));
     }
 
-    public function testSoftDelete(): void
+    public function test_soft_delete(): void
     {
         $asset = new Asset('asset-uuid', 'Server X', 'Dell', 'Model');
 
@@ -84,7 +88,7 @@ class AssetServiceTest extends TestCase
         $this->assertTrue($asset->isDeleted());
     }
 
-    public function testSoftDeleteThrowsWhenHasActiveAssignments(): void
+    public function test_soft_delete_throws_when_has_active_assignments(): void
     {
         $asset = new Asset('asset-uuid', 'Server X', 'Dell', 'Model');
 
@@ -95,7 +99,7 @@ class AssetServiceTest extends TestCase
         $this->service->softDelete('asset-uuid');
     }
 
-    public function testFindById(): void
+    public function test_find_by_id(): void
     {
         $asset = new Asset('asset-uuid', 'Server X', 'Dell', 'Model');
         $this->repository->method('findById')->willReturn($asset);
@@ -106,7 +110,7 @@ class AssetServiceTest extends TestCase
         $this->assertSame('Server X', $result->name);
     }
 
-    public function testFindAll(): void
+    public function test_find_all(): void
     {
         $assets = [
             new Asset('uuid-1', 'Server A', 'Dell', 'Model A'),

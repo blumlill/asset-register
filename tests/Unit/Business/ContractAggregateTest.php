@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Tests\Unit\Business;
 
@@ -24,7 +26,7 @@ class ContractAggregateTest extends TestCase
         );
     }
 
-    public function testAssignAssetHappyPath(): void
+    public function test_assign_asset_happy_path(): void
     {
         $aggregate = new ContractAggregate($this->contract);
         $contractAsset = new ContractAsset('ca-uuid', 'contract-uuid', 'asset-uuid', 'SN-001');
@@ -35,7 +37,7 @@ class ContractAggregateTest extends TestCase
         $this->assertSame($contractAsset, $aggregate->getContractAssets()[0]);
     }
 
-    public function testAssignDuplicateAssetThrows(): void
+    public function test_assign_duplicate_asset_throws(): void
     {
         $aggregate = new ContractAggregate($this->contract);
         $ca1 = new ContractAsset('ca-uuid-1', 'contract-uuid', 'asset-uuid', 'SN-001');
@@ -47,7 +49,7 @@ class ContractAggregateTest extends TestCase
         $aggregate->assignAsset($ca2);
     }
 
-    public function testRemoveAsset(): void
+    public function test_remove_asset(): void
     {
         $ca = new ContractAsset('ca-uuid', 'contract-uuid', 'asset-uuid', 'SN-001');
         $aggregate = new ContractAggregate($this->contract, [$ca]);
@@ -57,7 +59,7 @@ class ContractAggregateTest extends TestCase
         $this->assertCount(0, $aggregate->getContractAssets());
     }
 
-    public function testConstructorLoadsExistingAssets(): void
+    public function test_constructor_loads_existing_assets(): void
     {
         $ca = new ContractAsset('ca-uuid', 'contract-uuid', 'asset-uuid', 'SN-001');
         $asset = new Asset('asset-uuid', 'Server X', 'Dell', 'PowerEdge');
@@ -67,7 +69,7 @@ class ContractAggregateTest extends TestCase
         $this->assertSame($asset, $aggregate->getAssetDetail('asset-uuid'));
     }
 
-    public function testAssignAssetErrorCodeIsCorrect(): void
+    public function test_assign_asset_error_code_is_correct(): void
     {
         $aggregate = new ContractAggregate($this->contract);
         $ca1 = new ContractAsset('ca-1', 'contract-uuid', 'asset-uuid', 'SN-001');

@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace App\Business\AssetRegistry\Services;
 
@@ -49,7 +51,7 @@ final class AssetService
             throw new AssetHasActiveAssignmentsException($id);
         }
 
-        $asset->softDelete(new DateTimeImmutable());
+        $asset->softDelete(new DateTimeImmutable);
         $this->repository->save($asset);
     }
 
@@ -67,7 +69,7 @@ final class AssetService
     private function toData(Asset $asset): AssetData
     {
         return new AssetData(
-            $asset->getId(),
+            $asset->id,
             $asset->getName(),
             $asset->getManufacturer(),
             $asset->getModel(),

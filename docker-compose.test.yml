@@ -1,0 +1,40 @@
+services:
+  app:
+    build:
+      context: .
+      target: testing
+    environment:
+      APP_ENV: testing
+      APP_KEY: base64:c2VjcmV0LXRlc3Qta2V5LWZvci1sYXJhdmVsLXRlc3Q=
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: asset_register_test
+      DB_USERNAME: asset
+      DB_PASSWORD: secret
+      SWAGGER_USER: swagger
+      SWAGGER_PASSWORD: secret
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - test
+
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: asset_register_test
+      MYSQL_USER: asset
+      MYSQL_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: rootsecret
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootsecret"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - test
+
+networks:
+  test:
+    driver: bridge

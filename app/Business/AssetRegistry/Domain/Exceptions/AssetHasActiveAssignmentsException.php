@@ -1,16 +1,13 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace App\Business\AssetRegistry\Domain\Exceptions;
 
-use RuntimeException;
-
-final class AssetHasActiveAssignmentsException extends RuntimeException
+final class AssetHasActiveAssignmentsException extends DomainException
 {
-    public readonly string $errorCode;
-
     public function __construct(string $assetId)
     {
-        $this->errorCode = 'ASSET_HAS_ACTIVE_ASSIGNMENTS';
-        parent::__construct("Asset '{$assetId}' has active contract assignments and cannot be deleted.");
+        parent::__construct(DomainErrorType::CONFLICT, 'ASSET_HAS_ACTIVE_ASSIGNMENTS', "Asset '{$assetId}' has active contract assignments and cannot be deleted.");
     }
 }

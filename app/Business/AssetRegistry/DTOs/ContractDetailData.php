@@ -1,11 +1,13 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace App\Business\AssetRegistry\DTOs;
 
 readonly class ContractDetailData
 {
     /**
-     * @param ContractAssetData[] $assets
+     * @param  ContractAssetData[]  $assets
      */
     public function __construct(
         public string $id,

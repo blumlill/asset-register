@@ -15,7 +15,7 @@ Client -> Controller : POST /api/v1/contracts/{id}/assets\n{asset_id, serial_num
 activate Controller
 Controller -> Request : validate()
 
-alt validation fails (asset_id not uuid or not in assets table)
+alt validation fails (asset_id not uuid, not in assets table, or asset is soft-deleted)
     Request --> Controller : ValidationException
     Controller --> Client : 422 VALIDATION_ERROR
 else passes
@@ -57,16 +57,16 @@ else passes
         Controller --> Client : 409 ASSET_ALREADY_ASSIGNED
     else ok
         Aggregate --> Service : (assigned in-memory)
-        deactivate Aggregate
     end
+
+    Service -> Aggregate : addAssetDetail(asset)
+    Aggregate --> Service : (asset detail cached in-memory)
+    deactivate Aggregate
 
     Service -> IContRepo : addContractAsset(ContractAsset)
     IContRepo -> DB : INSERT INTO contract_assets ...
 
-    Service -> IContRepo : findByIdWithAssets(contractId)
-    IContRepo --> Service : refreshed ContractAggregate
-
-    Service --> Controller : ContractDetailData DTO
+    Service --> Controller : ContractDetailData DTO (mapped from in-memory aggregate)
     deactivate Service
     Controller --> Client : 201 {data: ContractDetail with updated assets}
 end

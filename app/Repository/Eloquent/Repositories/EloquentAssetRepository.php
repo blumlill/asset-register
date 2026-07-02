@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace App\Repository\Eloquent\Repositories;
 
@@ -31,11 +33,11 @@ final class EloquentAssetRepository implements IAssetRepository
 
     public function save(Asset $asset): Asset
     {
-        $model = AssetModel::withTrashed()->find($asset->getId());
+        $model = AssetModel::withTrashed()->find($asset->id);
 
         if ($model === null) {
-            $model = new AssetModel();
-            $model->id = $asset->getId();
+            $model = new AssetModel;
+            $model->id = $asset->id;
         }
 
         $model->name = $asset->getName();
