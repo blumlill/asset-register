@@ -49,16 +49,6 @@ class ContractAggregateTest extends TestCase
         $aggregate->assignAsset($ca2);
     }
 
-    public function test_remove_asset(): void
-    {
-        $ca = new ContractAsset('ca-uuid', 'contract-uuid', 'asset-uuid', 'SN-001');
-        $aggregate = new ContractAggregate($this->contract, [$ca]);
-
-        $aggregate->removeAsset('asset-uuid');
-
-        $this->assertCount(0, $aggregate->getContractAssets());
-    }
-
     public function test_constructor_loads_existing_assets(): void
     {
         $ca = new ContractAsset('ca-uuid', 'contract-uuid', 'asset-uuid', 'SN-001');

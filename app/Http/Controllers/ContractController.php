@@ -8,7 +8,6 @@ use App\Business\AssetRegistry\Services\ContractService;
 use App\Http\Requests\AssignAssetRequest;
 use App\Http\Requests\CreateContractRequest;
 use App\Http\Requests\UpdateContractRequest;
-use App\Http\Resources\ContractDetailResource;
 use App\Http\Resources\ContractResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -40,13 +39,13 @@ class ContractController extends Controller
         tags: ['Contracts'],
         parameters: [new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'string', format: 'uuid'))],
         responses: [
-            new OA\Response(response: 200, description: 'OK', content: new OA\JsonContent(ref: '#/components/schemas/ContractDetailResource')),
+            new OA\Response(response: 200, description: 'OK', content: new OA\JsonContent(ref: '#/components/schemas/ContractResource')),
             new OA\Response(response: 404, description: 'Not found'),
         ],
     )]
-    public function show(string $id): ContractDetailResource
+    public function show(string $id): ContractResource
     {
-        return new ContractDetailResource($this->service->findByIdWithAssets($id));
+        return new ContractResource($this->service->findByIdWithAssets($id));
     }
 
     #[OA\Post(
@@ -107,7 +106,7 @@ class ContractController extends Controller
         parameters: [new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'string', format: 'uuid'))],
         requestBody: new OA\RequestBody(ref: '#/components/requestBodies/AssignAsset'),
         responses: [
-            new OA\Response(response: 201, description: 'Assigned', content: new OA\JsonContent(ref: '#/components/schemas/ContractDetailResource')),
+            new OA\Response(response: 201, description: 'Assigned', content: new OA\JsonContent(ref: '#/components/schemas/ContractResource')),
             new OA\Response(response: 404, description: 'Not found'),
             new OA\Response(response: 409, description: 'Conflict'),
             new OA\Response(response: 422, description: 'Validation error'),
@@ -117,7 +116,7 @@ class ContractController extends Controller
     {
         $detail = $this->service->assignAsset($id, $request->toDto());
 
-        return (new ContractDetailResource($detail))->response()->setStatusCode(201);
+        return (new ContractResource($detail))->response()->setStatusCode(201);
     }
 
     #[OA\Delete(

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Business\AssetRegistry\DTOs;
 
-readonly class UpdateAssetData
+readonly class AssetInputData
 {
     public function __construct(
         public string $name,

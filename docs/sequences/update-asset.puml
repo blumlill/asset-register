@@ -4,7 +4,7 @@ title PUT /api/v1/assets/{id} — Update Asset
 
 actor Client
 participant "AssetController" as Controller
-participant "UpdateAssetRequest" as Request
+participant "AssetRequest" as Request
 participant "AssetService" as Service
 participant "IAssetRepository" as IRepo
 participant "AssetMapper" as Mapper
@@ -20,7 +20,7 @@ alt validation fails
     Request --> Controller : ValidationException (422)
     Controller --> Client : 422 VALIDATION_ERROR
 else validation passes
-    Controller -> Service : update(id, UpdateAssetData)
+    Controller -> Service : update(id, AssetInputData)
     activate Service
 
     Service -> IRepo : findById(id)

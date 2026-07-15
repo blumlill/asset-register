@@ -62,7 +62,7 @@ final class EloquentContractRepository implements IContractRepository
             ->all();
     }
 
-    public function saveContract(Contract $contract): Contract
+    public function save(Contract $contract): Contract
     {
         $model = ContractModel::find($contract->id);
 
@@ -83,7 +83,7 @@ final class EloquentContractRepository implements IContractRepository
         return ContractMapper::fromModel($model->fresh() ?? $model);
     }
 
-    public function deleteContract(string $id): void
+    public function delete(string $id): void
     {
         if (ContractModel::destroy($id) === 0) {
             throw new ContractNotFoundException($id);

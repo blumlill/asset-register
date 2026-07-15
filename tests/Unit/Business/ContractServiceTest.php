@@ -16,8 +16,7 @@ use App\Business\AssetRegistry\Domain\Exceptions\AssetNotFoundException;
 use App\Business\AssetRegistry\Domain\Exceptions\ContractNotFoundException;
 use App\Business\AssetRegistry\Domain\Exceptions\SerialNumberTakenException;
 use App\Business\AssetRegistry\DTOs\AssignAssetData;
-use App\Business\AssetRegistry\DTOs\CreateContractData;
-use App\Business\AssetRegistry\DTOs\UpdateContractData;
+use App\Business\AssetRegistry\DTOs\ContractInputData;
 use App\Business\AssetRegistry\Services\ContractService;
 use DateTimeImmutable;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -51,11 +50,11 @@ class ContractServiceTest extends TestCase
 
     public function test_create(): void
     {
-        $dto = new CreateContractData('C-001', 'Acme Corp', '2026-01-01', null);
+        $dto = new ContractInputData('C-001', 'Acme Corp', '2026-01-01', null);
 
         $this->contractRepository
             ->expects($this->once())
-            ->method('saveContract')
+            ->method('save')
             ->willReturnCallback(fn (Contract $c) => $c);
 
         $result = $this->service->create($dto);
@@ -70,10 +69,10 @@ class ContractServiceTest extends TestCase
     public function test_update(): void
     {
         $contract = new Contract('c-uuid', 'C-001', 'Old Name', new DateTimeImmutable('2026-01-01'));
-        $dto = new UpdateContractData('C-002', 'New Name', '2026-06-01', '2026-12-31');
+        $dto = new ContractInputData('C-002', 'New Name', '2026-06-01', '2026-12-31');
 
         $this->contractRepository->method('findById')->willReturn($contract);
-        $this->contractRepository->expects($this->once())->method('saveContract')
+        $this->contractRepository->expects($this->once())->method('save')
             ->willReturnCallback(fn (Contract $c) => $c);
 
         $result = $this->service->update('c-uuid', $dto);
@@ -89,12 +88,12 @@ class ContractServiceTest extends TestCase
             ->willThrowException(new ContractNotFoundException('c-uuid'));
 
         $this->expectException(ContractNotFoundException::class);
-        $this->service->update('c-uuid', new UpdateContractData('C-001', 'Corp', '2026-01-01', null));
+        $this->service->update('c-uuid', new ContractInputData('C-001', 'Corp', '2026-01-01', null));
     }
 
     public function test_delete(): void
     {
-        $this->contractRepository->expects($this->once())->method('deleteContract')->with('c-uuid');
+        $this->contractRepository->expects($this->once())->method('delete')->with('c-uuid');
 
         $this->service->delete('c-uuid');
     }

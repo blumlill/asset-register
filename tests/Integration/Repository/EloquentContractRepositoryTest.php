@@ -27,7 +27,7 @@ class EloquentContractRepositoryTest extends TestCase
         $this->repository = new EloquentContractRepository;
     }
 
-    public function test_save_contract_creates_new(): void
+    public function test_save_creates_new(): void
     {
         $contract = new Contract(
             'c-uuid-1234-5678-abcd-ef0123456789',
@@ -36,7 +36,7 @@ class EloquentContractRepositoryTest extends TestCase
             new DateTimeImmutable('2026-01-01'),
         );
 
-        $saved = $this->repository->saveContract($contract);
+        $saved = $this->repository->save($contract);
 
         $this->assertSame('C-001', $saved->getContractNumber());
         $this->assertDatabaseHas('contracts', ['contract_number' => 'C-001']);
@@ -91,7 +91,7 @@ class EloquentContractRepositoryTest extends TestCase
         $this->assertSame('Server X', $aggregate->getAssetDetail('a-uuid')->getName());
     }
 
-    public function test_delete_contract_cascades_contract_assets(): void
+    public function test_delete_cascades_contract_assets(): void
     {
         ContractModel::create([
             'id' => 'c-uuid',
@@ -112,7 +112,7 @@ class EloquentContractRepositoryTest extends TestCase
             'serial_number' => 'SN-001',
         ]);
 
-        $this->repository->deleteContract('c-uuid');
+        $this->repository->delete('c-uuid');
 
         $this->assertDatabaseMissing('contracts', ['id' => 'c-uuid']);
         $this->assertDatabaseMissing('contract_assets', ['contract_id' => 'c-uuid']);

@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Business\AssetRegistry\Services\AssetService;
-use App\Http\Requests\CreateAssetRequest;
-use App\Http\Requests\UpdateAssetRequest;
+use App\Http\Requests\AssetRequest;
 use App\Http\Resources\AssetResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -57,7 +56,7 @@ class AssetController extends Controller
             new OA\Response(response: 422, description: 'Validation error'),
         ],
     )]
-    public function store(CreateAssetRequest $request): JsonResponse
+    public function store(AssetRequest $request): JsonResponse
     {
         $data = $this->service->create($request->toDto());
 
@@ -76,7 +75,7 @@ class AssetController extends Controller
             new OA\Response(response: 422, description: 'Validation error'),
         ],
     )]
-    public function update(UpdateAssetRequest $request, string $id): AssetResource
+    public function update(AssetRequest $request, string $id): AssetResource
     {
         return new AssetResource($this->service->update($id, $request->toDto()));
     }

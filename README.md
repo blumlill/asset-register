@@ -120,8 +120,8 @@ Dependency direction is always inward: `Http` → `Business` ← `Repository`. E
 | Docker / Compose         | Reproducible dev and test environments; multi-stage build keeps the        |
 |                          | production image lean                                                      |
 | ........................ | .......................................................................... |
-| zircote/swagger-php      | Attribute-based OpenAPI annotations keep docs co-located with the code     |
-|                          | code they describe                                                         |
+| zircote/swagger-php      | Attribute-based OpenAPI annotations keep docs co-located with              |
+|                          | the code they describe                                                     |
 | ........................ | .......................................................................... |
 | Laravel Pint + PHPStan   | Automated formatting and static analysis — enforces PSR-12 and type        |
 |                          | correctness on every run                                                   |

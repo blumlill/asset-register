@@ -50,7 +50,7 @@ final class EloquentAssetRepository implements IAssetRepository
         return AssetMapper::fromModel($model->fresh() ?? $model);
     }
 
-    public function hasActiveAssignments(string $assetId): bool
+    public function hasAssignments(string $assetId): bool
     {
         return ContractAssetModel::where('asset_id', $assetId)->exists();
     }

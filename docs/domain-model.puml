@@ -5,12 +5,11 @@ skinparam classAttributeIconSize 0
 title Asset Register — Domain Model
 
 class Asset {
-    -id: string
+    +id: string {readonly}
     -name: string
     -manufacturer: string
     -model: string
     -deletedAt: DateTimeImmutable?
-    +getId(): string
     +getName(): string
     +getManufacturer(): string
     +getModel(): string
@@ -21,12 +20,11 @@ class Asset {
 }
 
 class Contract {
-    -id: string
+    +id: string {readonly}
     -contractNumber: string
     -clientName: string
     -startDate: DateTimeImmutable
     -endDate: DateTimeImmutable?
-    +getId(): string
     +getContractNumber(): string
     +getClientName(): string
     +getStartDate(): DateTimeImmutable
@@ -34,65 +32,66 @@ class Contract {
     +update(...): void
 }
 
-class ContractAsset {
-    -id: string
-    -contractId: string
-    -assetId: string
-    -serialNumber: string
-    +getId(): string
-    +getContractId(): string
-    +getAssetId(): string
-    +getSerialNumber(): string
+class ContractAsset <<readonly>> {
+    +id: string
+    +contractId: string
+    +assetId: string
+    +serialNumber: string
 }
 
 class ContractAggregate {
-    -contract: Contract
+    +contract: Contract {readonly}
     -contractAssets: ContractAsset[]
     -assetDetails: Asset[]
-    +getContract(): Contract
     +getContractAssets(): ContractAsset[]
     +getAssetDetail(assetId): Asset?
     +assignAsset(ContractAsset): void
     +addAssetDetail(asset: Asset): void
-    +removeAsset(assetId): void
 }
 
 interface IAssetRepository {
     +findById(id): Asset
     +findAll(): Asset[]
     +save(Asset): Asset
-    +hasActiveAssignments(assetId): bool
+    +hasAssignments(assetId): bool
 }
 
 interface IContractRepository {
     +findById(id): Contract
     +findByIdWithAssets(id): ContractAggregate
     +findAll(): Contract[]
-    +saveContract(Contract): Contract
-    +deleteContract(id): void
+    +save(Contract): Contract
+    +delete(id): void
     +addContractAsset(ContractAsset): ContractAsset
     +removeContractAsset(contractId, assetId): void
     +isSerialNumberTaken(serialNumber): bool
 }
 
 class AssetService {
-    +create(CreateAssetData): AssetData
-    +update(id, UpdateAssetData): AssetData
+    +create(AssetInputData): AssetData
+    +update(id, AssetInputData): AssetData
     +softDelete(id): void
     +findById(id): AssetData
     +findAll(): AssetData[]
 }
 
 class ContractService {
-    +create(CreateContractData): ContractData
-    +update(id, UpdateContractData): ContractData
+    +create(ContractInputData): ContractData
+    +update(id, ContractInputData): ContractData
     +delete(id): void
     +findById(id): ContractData
-    +findByIdWithAssets(id): ContractDetailData
+    +findByIdWithAssets(id): ContractData
     +findAll(): ContractData[]
-    +assignAsset(contractId, AssignAssetData): ContractDetailData
+    +assignAsset(contractId, AssignAssetData): ContractData
     +removeAsset(contractId, assetId): void
 }
+
+note right of ContractService::findByIdWithAssets
+  ContractData.assets is null for
+  create/update/list/findById;
+  populated for findByIdWithAssets
+  and assignAsset.
+end note
 
 ContractAggregate *-- Contract
 ContractAggregate *-- ContractAsset

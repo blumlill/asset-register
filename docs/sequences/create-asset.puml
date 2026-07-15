@@ -4,7 +4,7 @@ title POST /api/v1/assets — Create Asset
 
 actor Client
 participant "AssetController" as Controller
-participant "CreateAssetRequest" as Request
+participant "AssetRequest" as Request
 participant "AssetService" as Service
 participant "IAssetRepository" as IRepo
 participant "AssetMapper" as Mapper
@@ -21,10 +21,10 @@ alt validation fails
     Request --> Controller : ValidationException (422)
     Controller --> Client : 422 VALIDATION_ERROR
 else validation passes
-    Request --> Controller : CreateAssetData DTO
+    Request --> Controller : AssetInputData DTO
     deactivate Request
 
-    Controller -> Service : create(CreateAssetData)
+    Controller -> Service : create(AssetInputData)
     activate Service
 
     Service -> Service : new Asset(uuid, name, manufacturer, model)

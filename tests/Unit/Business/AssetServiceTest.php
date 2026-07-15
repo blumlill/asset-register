@@ -9,8 +9,7 @@ use App\Business\AssetRegistry\Contracts\IUuidGenerator;
 use App\Business\AssetRegistry\Domain\Entities\Asset;
 use App\Business\AssetRegistry\Domain\Exceptions\AssetHasActiveAssignmentsException;
 use App\Business\AssetRegistry\Domain\Exceptions\AssetNotFoundException;
-use App\Business\AssetRegistry\DTOs\CreateAssetData;
-use App\Business\AssetRegistry\DTOs\UpdateAssetData;
+use App\Business\AssetRegistry\DTOs\AssetInputData;
 use App\Business\AssetRegistry\Services\AssetService;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -35,7 +34,7 @@ class AssetServiceTest extends TestCase
 
     public function test_create(): void
     {
-        $dto = new CreateAssetData('Server X', 'Dell', 'PowerEdge R750');
+        $dto = new AssetInputData('Server X', 'Dell', 'PowerEdge R750');
 
         $this->repository
             ->expects($this->once())
@@ -53,7 +52,7 @@ class AssetServiceTest extends TestCase
     public function test_update(): void
     {
         $asset = new Asset('asset-uuid', 'Old Name', 'Dell', 'Old Model');
-        $dto = new UpdateAssetData('New Name', 'HP', 'New Model');
+        $dto = new AssetInputData('New Name', 'HP', 'New Model');
 
         $this->repository->method('findById')->willReturn($asset);
         $this->repository->expects($this->once())->method('save')->willReturnCallback(fn (Asset $a) => $a);
@@ -71,7 +70,7 @@ class AssetServiceTest extends TestCase
             ->willThrowException(new AssetNotFoundException('asset-uuid'));
 
         $this->expectException(AssetNotFoundException::class);
-        $this->service->update('asset-uuid', new UpdateAssetData('x', 'y', 'z'));
+        $this->service->update('asset-uuid', new AssetInputData('x', 'y', 'z'));
     }
 
     public function test_soft_delete(): void
@@ -79,7 +78,7 @@ class AssetServiceTest extends TestCase
         $asset = new Asset('asset-uuid', 'Server X', 'Dell', 'Model');
 
         $this->repository->method('findById')->willReturn($asset);
-        $this->repository->method('hasActiveAssignments')->willReturn(false);
+        $this->repository->method('hasAssignments')->willReturn(false);
         $this->repository->expects($this->once())->method('save')
             ->willReturnCallback(fn (Asset $a) => $a);
 
@@ -93,7 +92,7 @@ class AssetServiceTest extends TestCase
         $asset = new Asset('asset-uuid', 'Server X', 'Dell', 'Model');
 
         $this->repository->method('findById')->willReturn($asset);
-        $this->repository->method('hasActiveAssignments')->willReturn(true);
+        $this->repository->method('hasAssignments')->willReturn(true);
 
         $this->expectException(AssetHasActiveAssignmentsException::class);
         $this->service->softDelete('asset-uuid');

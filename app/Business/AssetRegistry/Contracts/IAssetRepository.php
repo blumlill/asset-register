@@ -17,5 +17,5 @@ interface IAssetRepository
 
     public function save(Asset $asset): Asset;
 
-    public function hasActiveAssignments(string $assetId): bool;
+    public function hasAssignments(string $assetId): bool;
 }

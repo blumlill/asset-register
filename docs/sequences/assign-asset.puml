@@ -66,7 +66,7 @@ else passes
     Service -> IContRepo : addContractAsset(ContractAsset)
     IContRepo -> DB : INSERT INTO contract_assets ...
 
-    Service --> Controller : ContractDetailData DTO (mapped from in-memory aggregate)
+    Service --> Controller : ContractData DTO (mapped from in-memory aggregate)
     deactivate Service
     Controller --> Client : 201 {data: ContractDetail with updated assets}
 end

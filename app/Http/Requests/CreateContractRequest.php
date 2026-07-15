@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
-use App\Business\AssetRegistry\DTOs\CreateContractData;
+use App\Business\AssetRegistry\DTOs\ContractInputData;
 use Illuminate\Foundation\Http\FormRequest;
 use OpenApi\Attributes as OA;
 
@@ -34,9 +34,9 @@ class CreateContractRequest extends FormRequest
         ];
     }
 
-    public function toDto(): CreateContractData
+    public function toDto(): ContractInputData
     {
-        return new CreateContractData(
+        return new ContractInputData(
             $this->string('contract_number')->toString(),
             $this->string('client_name')->toString(),
             $this->string('start_date')->toString(),

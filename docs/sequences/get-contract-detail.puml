@@ -34,7 +34,7 @@ else found
 end
 
 Service -> Service : toDetailData(ContractAggregate)
-Service --> Controller : ContractDetailData DTO
+Service --> Controller : ContractData DTO
 deactivate Service
 
 Controller --> Client : 200 {data: {id, contract_number, client_name,\n  start_date, end_date,\n  assets: [{id, asset_id, serial_number,\n    asset_name, manufacturer, model}]}}

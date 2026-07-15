@@ -72,11 +72,11 @@ class DatabaseSeeder extends Seeder
             'serial_number' => 'SN-CSC-001',
         ]);
 
-        // $server is also on contractB with a different serial number (same asset type, different unit)
+        // $server also appears on contractB under a different serial number (same unit, second contract)
         ContractAssetModel::create([
             'contract_id' => $contractB->id,
-            'asset_id' => $unassigned->id,
-            'serial_number' => 'SN-HP-001',
+            'asset_id' => $server->id,
+            'serial_number' => 'SN-DELL-002',
         ]);
     }
 }

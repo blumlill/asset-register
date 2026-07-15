@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
-use App\Business\AssetRegistry\DTOs\UpdateContractData;
+use App\Business\AssetRegistry\DTOs\ContractInputData;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Unique;
@@ -41,9 +41,9 @@ class UpdateContractRequest extends FormRequest
         ];
     }
 
-    public function toDto(): UpdateContractData
+    public function toDto(): ContractInputData
     {
-        return new UpdateContractData(
+        return new ContractInputData(
             $this->string('contract_number')->toString(),
             $this->string('client_name')->toString(),
             $this->string('start_date')->toString(),

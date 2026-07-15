@@ -14,9 +14,7 @@ use App\Business\AssetRegistry\Domain\Exceptions\SerialNumberTakenException;
 use App\Business\AssetRegistry\DTOs\AssignAssetData;
 use App\Business\AssetRegistry\DTOs\ContractAssetData;
 use App\Business\AssetRegistry\DTOs\ContractData;
-use App\Business\AssetRegistry\DTOs\ContractDetailData;
-use App\Business\AssetRegistry\DTOs\CreateContractData;
-use App\Business\AssetRegistry\DTOs\UpdateContractData;
+use App\Business\AssetRegistry\DTOs\ContractInputData;
 use DateTimeImmutable;
 
 final class ContractService
@@ -27,7 +25,7 @@ final class ContractService
         private readonly IUuidGenerator $uuidGenerator,
     ) {}
 
-    public function create(CreateContractData $data): ContractData
+    public function create(ContractInputData $data): ContractData
     {
         $contract = new Contract(
             $this->uuidGenerator->generate(),
@@ -37,12 +35,12 @@ final class ContractService
             $data->endDate !== null ? new DateTimeImmutable($data->endDate) : null,
         );
 
-        $saved = $this->contractRepository->saveContract($contract);
+        $saved = $this->contractRepository->save($contract);
 
         return $this->toContractData($saved);
     }
 
-    public function update(string $id, UpdateContractData $data): ContractData
+    public function update(string $id, ContractInputData $data): ContractData
     {
         $contract = $this->contractRepository->findById($id);
 
@@ -53,14 +51,14 @@ final class ContractService
             $data->endDate !== null ? new DateTimeImmutable($data->endDate) : null,
         );
 
-        $saved = $this->contractRepository->saveContract($contract);
+        $saved = $this->contractRepository->save($contract);
 
         return $this->toContractData($saved);
     }
 
     public function delete(string $id): void
     {
-        $this->contractRepository->deleteContract($id);
+        $this->contractRepository->delete($id);
     }
 
     public function findById(string $id): ContractData
@@ -68,7 +66,7 @@ final class ContractService
         return $this->toContractData($this->contractRepository->findById($id));
     }
 
-    public function findByIdWithAssets(string $id): ContractDetailData
+    public function findByIdWithAssets(string $id): ContractData
     {
         return $this->toDetailData($this->contractRepository->findByIdWithAssets($id));
     }
@@ -79,7 +77,7 @@ final class ContractService
         return array_map($this->toContractData(...), $this->contractRepository->findAll());
     }
 
-    public function assignAsset(string $contractId, AssignAssetData $data): ContractDetailData
+    public function assignAsset(string $contractId, AssignAssetData $data): ContractData
     {
         $aggregate = $this->contractRepository->findByIdWithAssets($contractId);
         $asset = $this->assetRepository->findById($data->assetId);
@@ -119,7 +117,7 @@ final class ContractService
         );
     }
 
-    private function toDetailData(ContractAggregate $aggregate): ContractDetailData
+    private function toDetailData(ContractAggregate $aggregate): ContractData
     {
         $contract = $aggregate->contract;
 
@@ -139,7 +137,7 @@ final class ContractService
             $aggregate->getContractAssets(),
         );
 
-        return new ContractDetailData(
+        return new ContractData(
             $contract->id,
             $contract->getContractNumber(),
             $contract->getClientName(),

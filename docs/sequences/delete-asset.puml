@@ -25,7 +25,7 @@ else found
     deactivate IRepo
 end
 
-Service -> IRepo : hasActiveAssignments(id)
+Service -> IRepo : hasAssignments(id)
 IRepo -> DB : SELECT EXISTS(contract_assets WHERE asset_id = ?)
 
 alt has active assignments

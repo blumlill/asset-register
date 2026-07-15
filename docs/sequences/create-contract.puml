@@ -20,11 +20,11 @@ alt validation fails
     Request --> Controller : ValidationException (422)
     Controller --> Client : 422 VALIDATION_ERROR
 else validation passes
-    Controller -> Service : create(CreateContractData)
+    Controller -> Service : create(ContractInputData)
     activate Service
 
     Service -> Service : new Contract(uuid, contract_number, client_name, start_date, end_date?)
-    Service -> IRepo : saveContract(Contract)
+    Service -> IRepo : save(Contract)
     activate IRepo
 
     IRepo -> Model : find / new ContractModel

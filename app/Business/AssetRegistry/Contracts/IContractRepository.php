@@ -21,10 +21,10 @@ interface IContractRepository
     /** @return Contract[] */
     public function findAll(): array;
 
-    public function saveContract(Contract $contract): Contract;
+    public function save(Contract $contract): Contract;
 
     /** @throws ContractNotFoundException */
-    public function deleteContract(string $id): void;
+    public function delete(string $id): void;
 
     public function addContractAsset(ContractAsset $contractAsset): ContractAsset;
 

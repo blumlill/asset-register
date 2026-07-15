@@ -88,7 +88,7 @@ class EloquentAssetRepositoryTest extends TestCase
         $this->assertSoftDeleted('assets', ['id' => '019f19a0-94ea-7178-80fc-67f72e3bd2b3']);
     }
 
-    public function test_has_active_assignments_returns_true_when_assigned(): void
+    public function test_has_assignments_returns_true_when_assigned(): void
     {
         AssetModel::create(['id' => 'asset-uuid', 'name' => 'A', 'manufacturer' => 'M', 'model' => 'X']);
         ContractModel::create([
@@ -104,13 +104,13 @@ class EloquentAssetRepositoryTest extends TestCase
             'serial_number' => 'SN-001',
         ]);
 
-        $this->assertTrue($this->repository->hasActiveAssignments('asset-uuid'));
+        $this->assertTrue($this->repository->hasAssignments('asset-uuid'));
     }
 
-    public function test_has_active_assignments_returns_false_when_none(): void
+    public function test_has_assignments_returns_false_when_none(): void
     {
         AssetModel::create(['id' => 'asset-uuid', 'name' => 'A', 'manufacturer' => 'M', 'model' => 'X']);
 
-        $this->assertFalse($this->repository->hasActiveAssignments('asset-uuid'));
+        $this->assertFalse($this->repository->hasAssignments('asset-uuid'));
     }
 }

@@ -19,7 +19,7 @@ alt validation fails
     Request --> Controller : ValidationException (422)
     Controller --> Client : 422 VALIDATION_ERROR
 else validation passes
-    Controller -> Service : update(id, UpdateContractData)
+    Controller -> Service : update(id, ContractInputData)
     activate Service
 
     Service -> IRepo : findById(id)
@@ -38,7 +38,7 @@ else validation passes
     end
 
     Service -> Service : contract.update(contract_number, client_name, start_date, end_date?)
-    Service -> IRepo : saveContract(Contract)
+    Service -> IRepo : save(Contract)
     IRepo -> DB : UPDATE contracts ...
     IRepo --> Service : Contract
     Service --> Controller : ContractData DTO

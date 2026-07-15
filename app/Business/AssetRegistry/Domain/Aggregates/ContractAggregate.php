@@ -62,10 +62,4 @@ final class ContractAggregate
     {
         $this->assetDetails[$asset->id] = $asset;
     }
-
-    public function removeAsset(string $assetId): void
-    {
-        unset($this->contractAssets[$assetId]);
-        unset($this->assetDetails[$assetId]);
-    }
 }

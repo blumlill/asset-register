@@ -9,8 +9,7 @@ use App\Business\AssetRegistry\Contracts\IUuidGenerator;
 use App\Business\AssetRegistry\Domain\Entities\Asset;
 use App\Business\AssetRegistry\Domain\Exceptions\AssetHasActiveAssignmentsException;
 use App\Business\AssetRegistry\DTOs\AssetData;
-use App\Business\AssetRegistry\DTOs\CreateAssetData;
-use App\Business\AssetRegistry\DTOs\UpdateAssetData;
+use App\Business\AssetRegistry\DTOs\AssetInputData;
 use DateTimeImmutable;
 
 final class AssetService
@@ -20,7 +19,7 @@ final class AssetService
         private readonly IUuidGenerator $uuidGenerator,
     ) {}
 
-    public function create(CreateAssetData $data): AssetData
+    public function create(AssetInputData $data): AssetData
     {
         $asset = new Asset(
             $this->uuidGenerator->generate(),
@@ -34,7 +33,7 @@ final class AssetService
         return $this->toData($saved);
     }
 
-    public function update(string $id, UpdateAssetData $data): AssetData
+    public function update(string $id, AssetInputData $data): AssetData
     {
         $asset = $this->repository->findById($id);
         $asset->update($data->name, $data->manufacturer, $data->model);
@@ -47,7 +46,7 @@ final class AssetService
     {
         $asset = $this->repository->findById($id);
 
-        if ($this->repository->hasActiveAssignments($id)) {
+        if ($this->repository->hasAssignments($id)) {
             throw new AssetHasActiveAssignmentsException($id);
         }
 
